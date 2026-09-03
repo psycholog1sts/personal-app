@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 
 function assertReportShape(report) {
   if (!report || typeof report !== 'object' || report.schemaVersion !== 1 || !Array.isArray(report.findings)) {
-    throw new TypeError('invalid Guardian report');
+    throw new TypeError('invalid RLSProof report');
   }
   return report;
 }
@@ -47,7 +47,7 @@ export async function readReport(inputPath) {
 export function renderReport(report) {
   assertReportShape(report);
   const lines = [
-    'Guardian Production Readiness Report',
+    'RLSProof Production Readiness Report',
     `Target: ${report.target}`,
     `Scope: ${report.scope?.mode ?? 'unknown'}`,
     `Coverage complete: ${report.coverage?.complete === true ? 'yes' : 'no'}`,
