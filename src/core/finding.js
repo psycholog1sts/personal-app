@@ -1,5 +1,5 @@
-import { createHash } from 'node:crypto';
 import { redactEvidence } from './redact.js';
+import { sha256Hex } from './sha256.js';
 
 const SEVERITIES = new Set(['critical', 'high', 'medium', 'low', 'info']);
 
@@ -18,7 +18,7 @@ export function makeFinding(input) {
     String(input.title),
   ].join('\u0000');
 
-  const id = `gdn_${createHash('sha256').update(identity).digest('hex').slice(0, 16)}`;
+  const id = `gdn_${sha256Hex(identity).slice(0, 16)}`;
 
   return {
     id,
