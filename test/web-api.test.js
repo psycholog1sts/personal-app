@@ -9,7 +9,7 @@ test('health route is no-store and exposes no environment data', async () => {
   assert.equal(response.status, 200);
   assert.match(response.headers.get('cache-control') ?? '', /no-store/);
   const body = await response.json();
-  assert.deepEqual(body, { ok: true, service: 'guardian', version: '0.2.0' });
+  assert.deepEqual(body, { ok: true, service: 'rlsproof', version: '0.2.0' });
 });
 
 test('scan API rejects malformed JSON without contacting GitHub', async () => {

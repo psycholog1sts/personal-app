@@ -1,10 +1,11 @@
 {
-  "name": "guardian",
+  "name": "rlsproof",
   "version": "0.2.0",
   "private": true,
   "license": "UNLICENSED",
   "type": "module",
   "bin": {
+    "rlsproof": "./src/cli.js",
     "guardian": "./src/cli.js"
   },
   "engines": {

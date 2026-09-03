@@ -7,12 +7,12 @@ import { redactEvidence } from './core/redact.js';
 
 function usage() {
   return [
-    'Guardian - deterministic production-readiness scanner',
+    'RLSProof - deterministic Supabase-focused production-readiness scanner',
     '',
     'Usage:',
-    '  guardian scan <path> [--native-only|--full] [--opengrep-config <file>] [--json] [--out <file>]',
-    '  guardian report <report-file> [--json]',
-    '  guardian verify <report-file> <path> [--native-only|--full] [--opengrep-config <file>] [--json]',
+    '  rlsproof scan <path> [--native-only|--full] [--opengrep-config <file>] [--json] [--out <file>]',
+    '  rlsproof report <report-file> [--json]',
+    '  rlsproof verify <report-file> <path> [--native-only|--full] [--opengrep-config <file>] [--json]',
   ].join('\n');
 }
 
@@ -67,7 +67,7 @@ function scanOptions(options) {
 
 function renderVerification(result) {
   const lines = [
-    'Guardian Verification Report',
+    'RLSProof Verification Report',
     `Resolved: ${result.resolvedCount}`,
     `Still present: ${result.presentCount}`,
     `New: ${result.newCount}`,
@@ -128,7 +128,7 @@ export async function main(argv = process.argv.slice(2)) {
 if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch((error) => {
     const message = redactEvidence(String(error?.message ?? error));
-    process.stderr.write(`Guardian error: ${message}\n`);
+    process.stderr.write(`RLSProof error: ${message}\n`);
     process.exitCode = 1;
   });
 }
