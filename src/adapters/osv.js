@@ -43,6 +43,7 @@ export async function scanWithOsv(root, options = {}) {
   const result = await runTool(options.command ?? 'osv-scanner', [
     'scan',
     '--format', 'json',
+    '--allow-no-lockfiles',
     root,
   ], { cwd: root, timeoutMs: options.timeoutMs ?? 180_000 });
 
