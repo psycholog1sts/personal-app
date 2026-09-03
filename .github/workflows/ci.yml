@@ -1,0 +1,81 @@
+name: guardian-ci
+
+on:
+  push:
+    branches:
+      - guardian-mvp-20260903
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup Node 22
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+      - name: Install
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Test
+        run: npm test
+
+  external-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup Node 22
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+      - name: Install Guardian dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Install checksum-verified scanners
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$(mktemp -d)"
+          trap 'rm -rf "$tmp"' EXIT
+          bin="$RUNNER_TEMP/guardian-bin"
+          mkdir -p "$bin"
+
+          curl --fail --location --silent --show-error --retry 3 \
+            -o "$tmp/gitleaks.tar.gz" \
+            https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  $tmp/gitleaks.tar.gz" | sha256sum --check --strict
+          tar -xzf "$tmp/gitleaks.tar.gz" -C "$tmp" gitleaks
+          install -m 0755 "$tmp/gitleaks" "$bin/gitleaks"
+
+          curl --fail --location --silent --show-error --retry 3 \
+            -o "$tmp/osv-scanner" \
+            https://github.com/google/osv-scanner/releases/download/v2.5.1/osv-scanner_linux_amd64
+          echo "f9f25499a2c8cc367b3af45df2ea7eeca7fbccceab9c35079968f4b3652194be  $tmp/osv-scanner" | sha256sum --check --strict
+          install -m 0755 "$tmp/osv-scanner" "$bin/osv-scanner"
+
+          curl --fail --location --silent --show-error --retry 3 \
+            -o "$tmp/opengrep" \
+            https://github.com/opengrep/opengrep/releases/download/v1.29.0/opengrep_manylinux_x86
+          echo "3365ef49d04893e01338d85d9bbd49b2bd5261ad4c9c0df0a6a0f8d44232ae13  $tmp/opengrep" | sha256sum --check --strict
+          install -m 0755 "$tmp/opengrep" "$bin/opengrep"
+
+          echo "$bin" >> "$GITHUB_PATH"
+      - name: Verify pinned scanner versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          gitleaks version
+          osv-scanner --version
+          opengrep --version
+      - name: External scanner integration contract
+        env:
+          GUARDIAN_EXTERNAL_INTEGRATION: '1'
+        run: node --test test/external-integration.test.js

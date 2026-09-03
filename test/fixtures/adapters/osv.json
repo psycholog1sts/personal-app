@@ -1,0 +1,20 @@
+{
+  "results": [
+    {
+      "source": {"path": "/repo/package-lock.json", "type": "lockfile"},
+      "packages": [
+        {
+          "package": {"name": "example-package", "version": "1.0.0", "ecosystem": "npm"},
+          "vulnerabilities": [
+            {
+              "id": "GHSA-test-0000-0000",
+              "aliases": ["CVE-2099-0001"],
+              "database_specific": {"severity": "HIGH"},
+              "summary": "Synthetic fixture vulnerability"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

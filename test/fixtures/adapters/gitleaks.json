@@ -1,0 +1,15 @@
+[
+  {
+    "Description": "Generic API Key",
+    "StartLine": 4,
+    "EndLine": 4,
+    "StartColumn": 18,
+    "EndColumn": 62,
+    "Line": "const apiKey = 'FAKE_GITLEAKS_SECRET_NEVER_OUTPUT';",
+    "Match": "apiKey=FAKE_GITLEAKS_SECRET_NEVER_OUTPUT",
+    "Secret": "FAKE_GITLEAKS_SECRET_NEVER_OUTPUT",
+    "File": "src/config.js",
+    "RuleID": "generic-api-key",
+    "Fingerprint": "src/config.js:generic-api-key:4"
+  }
+]
