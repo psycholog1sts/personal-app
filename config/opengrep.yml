@@ -1,0 +1,6 @@
+rules:
+  - id: guardian.dangerous-eval
+    languages: [javascript, typescript]
+    message: Dynamic eval executes code from runtime input.
+    severity: ERROR
+    pattern: eval(...)
