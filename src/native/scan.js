@@ -83,7 +83,7 @@ function scanCodeFile(root, filePath, text) {
   const evalPattern = /\beval\s*\(/g;
   for (const match of text.matchAll(evalPattern)) {
     const line = lineNumberFor(text, match.index ?? 0);
-    const rawLine = text.split(/\r?\n/)[line - 1]?.trim() ?? 'eval(...)';
+    const rawLine = text.split(/\r?\n/)[line - 1]?.trim() ?? '<dynamic-code-execution>';
     findings.push(makeFinding({
       engine: 'native',
       rule: 'dangerous-eval',
