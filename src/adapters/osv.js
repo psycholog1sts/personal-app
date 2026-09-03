@@ -50,9 +50,36 @@ export async function scanWithOsv(root, options = {}) {
   if (result.missing) {
     return { findings: [], capability: { engine: 'osv-scanner', available: false, reason: 'executable-not-found' } };
   }
-  if (!result.ok) {
+
+  // OSV-Scanner deliberately returns exit code 1 when vulnerabilities are found.
+  // That is a completed scan with findings, not an engine failure.
+  const completedScan = result.ok || result.code === 1;
+  if (!completedScan) {
     return { findings: [], capability: { engine: 'osv-scanner', available: true, ok: false, reason: result.stderr || `exit-${result.code}` } };
   }
 
-  return { findings: parseOsvJson(result.stdout), capability: { engine: 'osv-scanner', available: true, ok: true } };
+  let findings;
+  try {
+    findings = parseOsvJson(result.stdout);
+  } catch (error) {
+    return {
+      findings: [],
+      capability: {
+        engine: 'osv-scanner',
+        available: true,
+        ok: false,
+        reason: `invalid-json-output: ${String(error?.message ?? error)}`,
+      },
+    };
+  }
+
+  return {
+    findings,
+    capability: {
+      engine: 'osv-scanner',
+      available: true,
+      ok: true,
+      vulnerabilitiesFound: result.code === 1,
+    },
+  };
 }
