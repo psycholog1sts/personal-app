@@ -1,6 +1,6 @@
 {
-  "name": "guardian-mvp",
-  "version": "0.1.0",
+  "name": "guardian",
+  "version": "0.2.0",
   "private": true,
   "license": "UNLICENSED",
   "type": "module",
@@ -11,8 +11,16 @@
     "node": ">=22 <23"
   },
   "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "test": "node --test test/*.test.js",
     "test:core": "node --test test/core.test.js",
     "scan:self": "node src/cli.js scan . --native-only --json"
+  },
+  "dependencies": {
+    "next": "16.3.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
   }
 }
