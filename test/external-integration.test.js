@@ -13,13 +13,14 @@ const opengrepConfig = path.join(repoRoot, 'config/opengrep.yml');
 const enabled = process.env.GUARDIAN_EXTERNAL_INTEGRATION === '1';
 
 function assertExternalCoverage(report) {
-  assert.equal(report.coverage.complete, true);
+  const diagnostics = JSON.stringify(report.coverage.capabilities, null, 2);
+  assert.equal(report.coverage.complete, true, `external coverage incomplete:\n${diagnostics}`);
   const byEngine = new Map(report.coverage.capabilities.map((capability) => [capability.engine, capability]));
   for (const engine of ['gitleaks', 'osv-scanner', 'opengrep']) {
     const capability = byEngine.get(engine);
-    assert.ok(capability, `missing capability for ${engine}`);
-    assert.equal(capability.available, true, `${engine} must be installed`);
-    assert.equal(capability.ok, true, `${engine} must complete successfully`);
+    assert.ok(capability, `missing capability for ${engine}\n${diagnostics}`);
+    assert.equal(capability.available, true, `${engine} must be installed\n${diagnostics}`);
+    assert.equal(capability.ok, true, `${engine} must complete successfully\n${diagnostics}`);
   }
 }
 
