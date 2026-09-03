@@ -3,7 +3,7 @@ name: guardian-ci
 on:
   push:
     branches:
-      - guardian-mvp-20260903
+      - main
   pull_request:
     branches:
       - main
