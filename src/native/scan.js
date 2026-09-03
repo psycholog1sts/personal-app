@@ -45,12 +45,28 @@ async function readSmallTextFile(filePath) {
   return readFile(filePath, 'utf8');
 }
 
+function findServiceRoleUsage(text) {
+  const patterns = [
+    /\b(?:const|let|var)\s+(?:SUPABASE_)?SERVICE_ROLE(?:_KEY)?\b\s*=/i,
+    /\bprocess\.env\.(?:SUPABASE_)?SERVICE_ROLE(?:_KEY)?\b/i,
+    /\bimport\.meta\.env\.(?:VITE_)?(?:SUPABASE_)?SERVICE_ROLE(?:_KEY)?\b/i,
+    /\bDeno\.env\.get\(\s*['"](?:SUPABASE_)?SERVICE_ROLE(?:_KEY)?['"]\s*\)/i,
+  ];
+
+  let earliest = null;
+  for (const pattern of patterns) {
+    const match = pattern.exec(text);
+    if (!match) continue;
+    if (!earliest || match.index < earliest.index) earliest = match;
+  }
+  return earliest;
+}
+
 function scanCodeFile(root, filePath, text) {
   const findings = [];
   const relative = toRelative(root, filePath);
 
-  const serviceRolePattern = /\b(?:SUPABASE_)?SERVICE_ROLE(?:_KEY)?\b/i;
-  const serviceRoleMatch = serviceRolePattern.exec(text);
+  const serviceRoleMatch = findServiceRoleUsage(text);
   if (serviceRoleMatch) {
     findings.push(makeFinding({
       engine: 'native',
@@ -59,7 +75,7 @@ function scanCodeFile(root, filePath, text) {
       title: 'Supabase service-role credential identifier found in application code',
       path: relative,
       line: lineNumberFor(text, serviceRoleMatch.index ?? 0),
-      evidence: 'service-role credential identifier detected; value intentionally omitted',
+      evidence: 'service-role credential usage detected; value intentionally omitted',
       remediation: 'Keep Supabase service-role credentials server-side only and rotate any credential that may have been exposed to client code.',
     }));
   }
