@@ -150,7 +150,9 @@ function scanSqlSecurityPatterns(root, filePath, text) {
     const start = match.index ?? 0;
     const end = functionHeaders[index + 1]?.index ?? text.length;
     const definition = text.slice(start, end);
-    if (!/\bsecurity\s+definer\b/i.test(definition)) continue;
+    const bodyMarker = /\bas\s+(?:\$[a-zA-Z0-9_]*\$|')/i.exec(definition);
+    const properties = bodyMarker ? definition.slice(0, bodyMarker.index) : definition;
+    if (!/\bsecurity\s+definer\b/i.test(properties)) continue;
 
     const functionName = match[2];
     findings.push(makeFinding({
