@@ -14,7 +14,7 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -26,6 +26,8 @@ jobs:
         run: npm install --ignore-scripts --no-audit --no-fund
       - name: Test
         run: npm test
+      - name: Production build
+        run: npm run build
 
   external-integration:
     runs-on: ubuntu-latest
