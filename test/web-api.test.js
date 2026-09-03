@@ -27,7 +27,7 @@ test('scan API rejects malformed JSON without contacting GitHub', async () => {
   assert.deepEqual(await response.json(), { error: 'Request body must be valid JSON.' });
 });
 
-test('scan API returns normalized findings and never returns raw source', async () => {
+test('scan API returns normalized findings without raw source or secret fields', async () => {
   const originalFetch = globalThis.fetch;
   const json = (value, status = 200, headers = {}) => new Response(JSON.stringify(value), {
     status,
@@ -69,7 +69,13 @@ test('scan API returns normalized findings and never returns raw source', async 
     assert.equal(body.releaseGate, 'blocked');
     assert.equal(body.findings.length, 1);
     assert.equal(body.findings[0].rule, 'dangerous-eval');
-    assert.equal(JSON.stringify(body).includes('eval(userInput)'), false);
+
+    for (const forbidden of ['source', 'content']) {
+      assert.equal(Object.hasOwn(body, forbidden), false);
+    }
+    for (const forbidden of ['source', 'raw', 'secret', 'match', 'content']) {
+      assert.equal(Object.hasOwn(body.findings[0], forbidden), false);
+    }
   } finally {
     globalThis.fetch = originalFetch;
   }
