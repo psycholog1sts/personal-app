@@ -1,17 +1,20 @@
 import './globals.css';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '');
 
 export const metadata = {
   title: 'RLSProof — Supabase Access-Control Proof',
   description: 'Free bounded Supabase-focused security and production-readiness scan for public GitHub repositories built with AI tools.',
-  ...(siteUrl ? { metadataBase: new URL(siteUrl) } : {}),
-  alternates: { canonical: '/' },
+  ...(siteUrl ? {
+    metadataBase: new URL(siteUrl),
+    alternates: { canonical: siteUrl },
+  } : {}),
   robots: { index: true, follow: true },
   openGraph: {
     title: 'RLSProof — Supabase Access-Control Proof',
     description: 'Find access-control and production blockers in AI-built Supabase apps before launch.',
     type: 'website',
+    ...(siteUrl ? { url: siteUrl } : {}),
   },
 };
 

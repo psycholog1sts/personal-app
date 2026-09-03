@@ -14,7 +14,6 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
     "test": "node --test test/*.test.js",
     "test:core": "node --test test/core.test.js",
     "scan:self": "node src/cli.js scan . --native-only --json"
