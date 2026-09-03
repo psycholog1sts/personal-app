@@ -4,7 +4,7 @@ export async function GET() {
   return Response.json(
     {
       ok: true,
-      service: 'guardian',
+      service: 'rlsproof',
       version: '0.2.0',
     },
     {
