@@ -56,6 +56,20 @@ test('flags SECURITY DEFINER functions created in exposed public schema', async 
   assert.equal(rules(findings).has('supabase-public-security-definer'), true);
 });
 
+test('does not attribute later SECURITY DEFINER text to an invoker function', async () => {
+  const findings = await scanSql(`
+    create or replace function public.safe_helper()
+    returns boolean
+    language sql
+    as $$ select true $$;
+
+    create view public.note_view as
+      select 'SECURITY DEFINER'::text as note;
+  `);
+
+  assert.equal(rules(findings).has('supabase-public-security-definer'), false);
+});
+
 test('flags public views that do not opt into security_invoker', async () => {
   const findings = await scanSql(`
     create table public.todos (id bigint, user_id uuid);
