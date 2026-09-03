@@ -1,0 +1,17 @@
+{
+  "version": "1.22.0",
+  "results": [
+    {
+      "check_id": "guardian.insecure-innerhtml",
+      "path": "src/view.js",
+      "start": {"line": 8, "col": 3},
+      "end": {"line": 8, "col": 41},
+      "extra": {
+        "message": "Untrusted HTML assignment",
+        "severity": "ERROR",
+        "metadata": {}
+      }
+    }
+  ],
+  "errors": []
+}
