@@ -49,15 +49,16 @@ function scanCodeFile(root, filePath, text) {
   const findings = [];
   const relative = toRelative(root, filePath);
 
-  const serviceRolePattern = /\b(?:SUPABASE_)?SERVICE_ROLE(?:_KEY)?\b/gi;
-  for (const match of text.matchAll(serviceRolePattern)) {
+  const serviceRolePattern = /\b(?:SUPABASE_)?SERVICE_ROLE(?:_KEY)?\b/i;
+  const serviceRoleMatch = serviceRolePattern.exec(text);
+  if (serviceRoleMatch) {
     findings.push(makeFinding({
       engine: 'native',
       rule: 'supabase-service-role-client',
       severity: 'critical',
       title: 'Supabase service-role credential identifier found in application code',
       path: relative,
-      line: lineNumberFor(text, match.index ?? 0),
+      line: lineNumberFor(text, serviceRoleMatch.index ?? 0),
       evidence: 'service-role credential identifier detected; value intentionally omitted',
       remediation: 'Keep Supabase service-role credentials server-side only and rotate any credential that may have been exposed to client code.',
     }));
