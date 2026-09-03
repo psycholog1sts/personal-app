@@ -3,14 +3,14 @@ import './globals.css';
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
 export const metadata = {
-  title: 'Guardian — AI App Production Readiness',
-  description: 'Free bounded security and production-readiness scan for public GitHub repositories built with AI tools and Supabase.',
+  title: 'RLSProof — Supabase Access-Control Proof',
+  description: 'Free bounded Supabase-focused security and production-readiness scan for public GitHub repositories built with AI tools.',
   ...(siteUrl ? { metadataBase: new URL(siteUrl) } : {}),
   alternates: { canonical: '/' },
   robots: { index: true, follow: true },
   openGraph: {
-    title: 'Guardian — AI App Production Readiness',
-    description: 'Find obvious security blockers in AI-built apps before launch.',
+    title: 'RLSProof — Supabase Access-Control Proof',
+    description: 'Find access-control and production blockers in AI-built Supabase apps before launch.',
     type: 'website',
   },
 };
