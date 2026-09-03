@@ -1,20 +1,20 @@
-# Guardian
+# RLSProof
 
-Guardian is a deterministic, local-first production-readiness scanner for JavaScript/TypeScript and Supabase-oriented applications, plus a bounded public-GitHub Quick Scan web surface for inbound validation.
+RLSProof is a deterministic, local-first Supabase-focused production-readiness scanner for JavaScript/TypeScript applications, plus a bounded public-GitHub Quick Scan web surface for inbound validation.
 
-Guardian is **not** a formal security audit, penetration test, compliance certification, sandbox, or proof that an application is secure.
+RLSProof is **not** a formal security audit, penetration test, compliance certification, sandbox, or proof that an application is secure.
 
 ## Product surfaces
 
 ### Free web Quick Scan
 
-The Next.js web app accepts a public GitHub repository (`owner/repo` or a canonical GitHub URL), downloads only a bounded allow-list of eligible source files into a temporary directory, runs Guardian's native checks, returns normalized findings, and deletes the temporary directory after the request.
+The Next.js web app accepts a public GitHub repository (`owner/repo` or a canonical GitHub URL), downloads only a bounded allow-list of eligible source files into a temporary directory, runs RLSProof's native checks, returns normalized findings, and deletes the temporary directory after the request.
 
 Quick Scan is intentionally partial:
 
 - Public GitHub repositories only.
 - Bounded repository/tree/file/byte budgets.
-- Native Guardian checks only.
+- Native RLSProof checks only.
 - `coverage.complete` is always `false` for Quick Scan.
 - A clean Quick Scan is **not** a release approval.
 
@@ -60,9 +60,9 @@ CLI examples:
 ```bash
 node src/cli.js --help
 node src/cli.js scan . --native-only
-node src/cli.js scan . --full --opengrep-config config/opengrep.yml --json --out guardian-report.json
-node src/cli.js report guardian-report.json
-node src/cli.js verify guardian-report.json . --full --opengrep-config config/opengrep.yml
+node src/cli.js scan . --full --opengrep-config config/opengrep.yml --json --out rlsproof-report.json
+node src/cli.js report rlsproof-report.json
+node src/cli.js verify rlsproof-report.json . --full --opengrep-config config/opengrep.yml
 ```
 
 ## Environment
@@ -96,7 +96,7 @@ See [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md) for trust boundaries, mitigat
 
 ## Scan modes and release gate
 
-Guardian separates **score** from **coverage**. Consumers must inspect `coverage.complete` and per-engine capability metadata instead of treating a high score as proof every engine ran.
+RLSProof separates **score** from **coverage**. Consumers must inspect `coverage.complete` and per-engine capability metadata instead of treating a high score as proof every engine ran.
 
 OSV-Scanner exit status `1` is treated as a completed scan with vulnerabilities, not an engine failure. A tree with no supported package manifests can still allow the other engines to complete their requested coverage.
 
@@ -107,7 +107,7 @@ npm test
 npm run build
 ```
 
-CI additionally installs checksum-verified external scanners and runs their integration contract against clean, intentionally vulnerable, and Guardian self-scan fixtures.
+CI additionally installs checksum-verified external scanners and runs their integration contract against clean, intentionally vulnerable, and self-scan fixtures.
 
 ## Deployment
 
@@ -123,10 +123,10 @@ No database is required for the free validation MVP, and Quick Scan intentionall
 
 ## Limitations
 
-Guardian does not execute or sandbox the target application, probe third-party infrastructure, test live authentication/authorization behavior, inspect cloud account configuration, perform DAST, or guarantee detection of every secret or vulnerability. Native rules are pattern-based and can produce false positives or false negatives. External scanner databases and behavior can change independently of Guardian.
+RLSProof does not execute or sandbox the target application, probe third-party infrastructure, test live authentication/authorization behavior, inspect cloud account configuration, perform DAST, or guarantee detection of every secret or vulnerability. Native rules are pattern-based and can produce false positives or false negatives. External scanner databases and behavior can change independently of RLSProof.
 
 Treat findings as engineering evidence requiring review and a clean result as one signal in a broader secure-development process.
 
 ## Licensing
 
-Guardian's npm package is private and marked `UNLICENSED`; repository visibility does not grant a license. Third-party scanners retain their own licenses. See [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+RLSProof's npm package is private and marked `UNLICENSED`; repository visibility does not grant a license. Third-party scanners retain their own licenses. See [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
