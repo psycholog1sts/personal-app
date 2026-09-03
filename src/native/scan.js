@@ -103,6 +103,91 @@ function normalizeTableName(name) {
   return name.replaceAll('"', '').toLowerCase();
 }
 
+function scanSqlSecurityPatterns(root, filePath, text) {
+  const findings = [];
+  const relative = toRelative(root, filePath);
+
+  const policyPattern = /create\s+policy\b[\s\S]*?;/gi;
+  for (const match of text.matchAll(policyPattern)) {
+    const statement = match[0];
+    const line = lineNumberFor(text, match.index ?? 0);
+
+    if (/\bauth\.role\s*\(\s*\)/i.test(statement)) {
+      findings.push(makeFinding({
+        engine: 'native',
+        rule: 'supabase-policy-deprecated-auth-role',
+        severity: 'medium',
+        title: 'RLS policy uses deprecated auth.role()',
+        path: relative,
+        line,
+        evidence: 'RLS policy calls deprecated auth.role(); policy text intentionally omitted',
+        remediation: 'Target Postgres roles with the policy TO clause (for example TO authenticated or TO anon) and keep authorization predicates separate.',
+      }));
+    }
+
+    const jwtUserMetadataPattern = /auth\.jwt\s*\(\s*\)[\s\S]*?(?:user_metadata|raw_user_meta_data)/i;
+    if (jwtUserMetadataPattern.test(statement)) {
+      findings.push(makeFinding({
+        engine: 'native',
+        rule: 'supabase-policy-user-metadata-authorization',
+        severity: 'high',
+        title: 'RLS policy may trust user-editable metadata for authorization',
+        path: relative,
+        line,
+        evidence: 'RLS policy references user-editable JWT metadata; policy text intentionally omitted',
+        remediation: 'Move authorization claims to trusted app_metadata/raw_app_meta_data or a protected table and authorize with server-controlled data.',
+      }));
+    }
+  }
+
+  const functionHeaderPattern = /create\s+(?:or\s+replace\s+)?function\s+(?:(?:"?([a-zA-Z0-9_]+)"?)\.)?"?([a-zA-Z0-9_]+)"?\s*\(/gi;
+  const functionHeaders = [...text.matchAll(functionHeaderPattern)];
+  for (let index = 0; index < functionHeaders.length; index += 1) {
+    const match = functionHeaders[index];
+    const schema = match[1]?.toLowerCase() ?? null;
+    if (schema !== 'public') continue;
+
+    const start = match.index ?? 0;
+    const end = functionHeaders[index + 1]?.index ?? text.length;
+    const definition = text.slice(start, end);
+    const bodyMarker = /\bas\s+(?:\$[a-zA-Z0-9_]*\$|')/i.exec(definition);
+    const properties = bodyMarker ? definition.slice(0, bodyMarker.index) : definition;
+    if (!/\bsecurity\s+definer\b/i.test(properties)) continue;
+
+    const functionName = match[2];
+    findings.push(makeFinding({
+      engine: 'native',
+      rule: 'supabase-public-security-definer',
+      severity: 'high',
+      title: `SECURITY DEFINER function is created in exposed public schema: ${functionName}`,
+      path: relative,
+      line: lineNumberFor(text, start),
+      evidence: `public.${functionName} is declared SECURITY DEFINER`,
+      remediation: 'Move privileged helper functions to an unexposed schema, set a safe search_path, and revoke EXECUTE from roles that do not require access.',
+    }));
+  }
+
+  const publicViewPattern = /create\s+(?:or\s+replace\s+)?view\s+"?public"?\."?([a-zA-Z0-9_]+)"?[\s\S]*?;/gi;
+  for (const match of text.matchAll(publicViewPattern)) {
+    const statement = match[0];
+    if (/security_invoker\s*=\s*true/i.test(statement)) continue;
+
+    const viewName = match[1];
+    findings.push(makeFinding({
+      engine: 'native',
+      rule: 'supabase-public-view-without-security-invoker',
+      severity: 'high',
+      title: `Public view may bypass underlying RLS policies: ${viewName}`,
+      path: relative,
+      line: lineNumberFor(text, match.index ?? 0),
+      evidence: `create view public.${viewName} detected without security_invoker = true`,
+      remediation: 'On PostgreSQL 15+, set security_invoker = true so the caller\'s RLS applies; otherwise revoke anon/authenticated access or move the view to an unexposed schema.',
+    }));
+  }
+
+  return findings;
+}
+
 function collectSqlState(root, sqlFiles) {
   const created = new Map();
   const rlsEnabled = new Set();
@@ -165,6 +250,7 @@ export async function runNativeScan(inputRoot) {
 
     if (extension === '.sql') {
       sqlFiles.push({ filePath, text });
+      findings.push(...scanSqlSecurityPatterns(root, filePath, text));
     } else {
       findings.push(...scanCodeFile(root, filePath, text));
     }
