@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import CoveragePanel from './components/CoveragePanel.js';
 import EvidencePanel from './components/EvidencePanel.js';
 import FaqSection from './components/FaqSection.js';
@@ -8,6 +7,7 @@ import InstallPanel from './components/InstallPanel.js';
 import PricingSection from './components/PricingSection.js';
 import ProofMatrix from './components/ProofMatrix.js';
 import ScannerForm from './components/ScannerForm.js';
+import SiteFooter from './components/SiteFooter.js';
 import SiteHeader from './components/SiteHeader.js';
 import TrustMethodology from './components/TrustMethodology.js';
 import WorkflowTimeline from './components/WorkflowTimeline.js';
@@ -73,16 +73,7 @@ export default function Home() {
         <FaqSection copy={copy.faq} />
       </main>
 
-      <footer className="footer shell">
-        <div><strong>RLSProof</strong><span>{copy.footer.tagline}</span></div>
-        <p>{copy.footer.disclaimer}</p>
-        <nav aria-label={copy.footer.legalLabel}>
-          <Link href="/security">{copy.footer.security}</Link>
-          <Link href="/privacy">{copy.footer.privacy}</Link>
-          <Link href="/terms">{copy.footer.terms}</Link>
-          <a href="https://github.com/psycholog1sts/personal-app" rel="noreferrer">{copy.footer.repository}</a>
-        </nav>
-      </footer>
+      <SiteFooter copy={copy.footer} />
     </>
   );
 }
