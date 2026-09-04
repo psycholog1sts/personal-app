@@ -75,9 +75,10 @@ test('verifyReport marks previous findings resolved when they disappear', async 
   assert.equal(verification.findings.every((item) => item.verification === 'resolved'), true);
 });
 
-test('CLI scan/report/verify works end-to-end and does not leak fake secrets', async () => {
+test('CLI scan/report/verify/sarif works end-to-end and does not leak fake secrets', async () => {
   const temp = await mkdtemp(path.join(os.tmpdir(), 'guardian-cli-'));
   const output = path.join(temp, 'report.json');
+  const sarifOutput = path.join(temp, 'report.sarif');
 
   const scan = await runCli(['scan', vulnerable, '--native-only', '--json', '--out', output]);
   assert.equal(scan.code, 0, scan.stderr);
@@ -94,4 +95,12 @@ test('CLI scan/report/verify works end-to-end and does not leak fake secrets', a
   const verifyJson = JSON.parse(verify.stdout);
   assert.equal(verifyJson.resolvedCount, 4);
   assert.equal(verifyJson.presentCount, 0);
+
+  const sarif = await runCli(['sarif', output, '--out', sarifOutput]);
+  assert.equal(sarif.code, 0, sarif.stderr);
+  const sarifJson = JSON.parse(sarif.stdout);
+  assert.equal(sarifJson.version, '2.1.0');
+  assert.equal(sarifJson.runs[0].results.length, 4);
+  assert.deepEqual(JSON.parse(await readFile(sarifOutput, 'utf8')), sarifJson);
+  assert.equal(sarif.stdout.includes('FAKE_SERVICE_ROLE_VALUE_SHOULD_NEVER_LEAK'), false);
 });
