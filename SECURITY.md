@@ -2,7 +2,7 @@
 
 ## Reporting a vulnerability
 
-Please do not put credentials, access tokens, private repository contents, personal data, or sensitive exploit details in a public GitHub issue.
+Do not open a public GitHub issue with secrets, credentials, access tokens, private repository contents, personal data, or sensitive exploit details.
 
 Start from the repository **Security** tab and use GitHub private vulnerability reporting when that option is available. If the private reporting flow is not available, open a minimal public issue that contains no secret or exploit detail and asks for a private follow-up channel.
 
