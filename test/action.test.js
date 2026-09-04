@@ -27,7 +27,7 @@ test('action.yml exposes a composite PR release gate with pinned Node setup', as
   const action = await readFile(new URL('../action.yml', import.meta.url), 'utf8');
   assert.match(action, /runs:\s*\n\s*using:\s*["']?composite["']?/);
   assert.match(action, /actions\/setup-node@820762786026740c76f36085b0efc47a31fe5020/);
-  assert.match(action, /github\.action_path.*src\/action\/run\.js/);
+  assert.match(action, /GITHUB_ACTION_PATH\/src\/action\/run\.js/);
   assert.match(action, /release-gate:/);
   assert.match(action, /score:/);
   assert.match(action, /report-path:/);
