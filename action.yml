@@ -11,6 +11,10 @@ inputs:
     description: Path for the normalized JSON report.
     required: false
     default: rlsproof-report.json
+  db-proof:
+    description: "Supabase database proof mode: off, auto, or required."
+    required: false
+    default: off
 
 outputs:
   release-gate:
@@ -25,6 +29,9 @@ outputs:
   report-path:
     description: Path to the generated JSON report.
     value: ${{ steps.gate.outputs.report-path }}
+  db-proof:
+    description: Supabase DB proof status for this run.
+    value: ${{ steps.gate.outputs.db-proof }}
 
 runs:
   using: composite
@@ -39,6 +46,7 @@ runs:
       env:
         RLSPROOF_TARGET: ${{ inputs.target }}
         RLSPROOF_REPORT_PATH: ${{ inputs.report-path }}
+        RLSPROOF_DB_PROOF: ${{ inputs.db-proof }}
       run: node "$GITHUB_ACTION_PATH/src/action/run.js"
 
 branding:
