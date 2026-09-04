@@ -63,11 +63,11 @@ node src/cli.js verify rlsproof-report.json . --full --opengrep-config config/op
 
 ## Build-time environment
 
-The public web build does not require a GitHub token or Stripe secret key.
+The public web build does not require a GitHub token or payment-provider secret key.
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
-| `AUDIT_CHECKOUT_URL` | Optional until payments are enabled | Public Stripe-hosted Payment Link for the $149 Launch Audit CTA. |
+| `AUDIT_CHECKOUT_URL` | Optional until payments are enabled | Public hosted checkout/payment link for the $149 Launch Audit CTA. |
 | `NEXT_PUBLIC_SITE_URL` | Recommended in production | Canonical site URL used for metadata, robots and sitemap. |
 
 If `AUDIT_CHECKOUT_URL` is absent, the Launch Audit button remains visibly disabled rather than presenting a fake checkout.
@@ -78,7 +78,7 @@ If `AUDIT_CHECKOUT_URL` is absent, the Launch Audit button remains visibly disab
 - Only explicitly eligible file types are selected; unsafe or irrelevant paths are excluded.
 - Repository size, tree entry count, file count, per-file bytes and total scanned bytes are bounded.
 - Public source contents remain in browser memory for the free scan and are not sent to an RLSProof application server.
-- No GitHub token or Stripe secret is embedded in the client bundle.
+- No GitHub token or payment-provider secret is embedded in the client bundle.
 - Findings intentionally omit raw secret values/source payload fields.
 - External CLI tools run with `shell: false`, bounded output and timeouts.
 - Native filesystem traversal skips symbolic links and oversized files.
@@ -110,7 +110,7 @@ The web app is a static Next.js export deployed with GitHub Pages Actions.
 1. Merge release changes to `main`.
 2. The Pages workflow tests and builds `out/` with the repository base path.
 3. `NEXT_PUBLIC_SITE_URL` is set to the GitHub Pages canonical URL during the Pages build.
-4. When a live Stripe Payment Link exists, expose only that public URL through `AUDIT_CHECKOUT_URL`; never add Stripe secret keys to the static build.
+4. When a live hosted checkout/payment link exists, expose only that public URL through `AUDIT_CHECKOUT_URL`; never add payment-provider secret keys to the static build.
 5. Verify `/`, `/privacy/`, `/terms/`, static assets, and a real public-repository Quick Scan after deployment.
 
 No database or application server is required for the free validation MVP.
