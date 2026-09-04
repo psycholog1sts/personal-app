@@ -185,10 +185,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 /* Coverage + evidence bento */
 .proofBento { padding-top: 10px; display: grid; grid-template-columns: 1.15fr .85fr; gap: 16px; }
-.bentoPanel { border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 22px; background: linear-gradient(180deg, var(--surface-2), var(--surface-1)); }
+.bentoPanel { min-width: 0; border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 22px; background: linear-gradient(180deg, var(--surface-2), var(--surface-1)); }
 .panelTitleRow { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
 .panelTitleRow h3 { margin: 0; font-size: 1.15rem; }
-.coverageLedger { margin-top: 22px; display: grid; grid-template-columns: repeat(5,1fr); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+.coverageLedger { width: 100%; max-width: 100%; margin-top: 22px; display: grid; grid-template-columns: repeat(5,1fr); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
 .coverageLedger > div { padding: 14px 12px; border-right: 1px solid var(--border); background: #090d13; }
 .coverageLedger > div:last-child { border-right: 0; }
 .coverageLedger strong, .coverageLedger span, .coverageLedger small { display: block; }
