@@ -189,7 +189,7 @@ body::before {
 .findingsExplorer,
 .coveragePanel,
 .evidencePanel,
-.scannerShell,
+.scannerCard,
 .installPanel,
 .priceCard {
   box-shadow: var(--shadow-panel);
