@@ -82,11 +82,12 @@ export function evaluateRegressionBaseline(baselineReport, currentReport) {
 
   const baselineEngines = normalizeEngines(baselineReport, 'baseline report');
   const currentEngines = normalizeEngines(currentReport, 'current report');
-  assertCompleteBaselineCoverage(baselineReport, baselineEngines);
 
   if (!sameArray(baselineEngines, currentEngines)) {
     throw new TypeError('baseline report must use the same static engine scope as the current scan');
   }
+
+  assertCompleteBaselineCoverage(baselineReport, baselineEngines);
 
   const baselineById = new Map(baselineReport.findings.map((finding) => [finding.id, finding]));
   const currentById = new Map(currentReport.findings.map((finding) => [finding.id, finding]));
