@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { browserQuickScanGithubRepo } from '../../src/remote/browser-quick-scan.js';
 
 function severityLabel(value) {
   return typeof value === 'string' ? value.toUpperCase() : 'UNKNOWN';
@@ -19,13 +20,7 @@ export default function ScannerForm({ checkoutUrl }) {
     setReport(null);
 
     try {
-      const response = await fetch('/api/scan', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ repository }),
-      });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload?.error ?? 'Scan failed.');
+      const payload = await browserQuickScanGithubRepo(repository.trim());
       setReport(payload);
     } catch (scanError) {
       setError(scanError?.message ?? 'Scan failed.');
@@ -59,7 +54,7 @@ export default function ScannerForm({ checkoutUrl }) {
             {loading ? 'Scanning…' : 'Scan free'}
           </button>
         </div>
-        <p className="formNote">Public repositories only. Quick Scan is intentionally bounded and never claims full coverage.</p>
+        <p className="formNote">Public repositories only. The bounded scan runs in your browser and never claims full coverage.</p>
       </form>
 
       {error ? <p className="errorBox" role="alert">{error}</p> : null}
