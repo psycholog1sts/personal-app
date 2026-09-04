@@ -1,4 +1,4 @@
-export const en = {
+export const englishDictionary = {
   meta: {
     home: {
       title: 'RLSProof — Supabase Authorization Release Gate',
