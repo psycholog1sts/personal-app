@@ -92,6 +92,22 @@ test('premium command center exposes explicit proof coverage, install, trust and
   assert.match(catalog, /production database/i);
 });
 
+test('onboarding documents fail-closed full static coverage separately from DB proof', async () => {
+  const install = await read('app/components/InstallPanel.js');
+  const catalog = await read('i18n/dictionaries/en.js');
+  const readme = await read('README.md');
+
+  assert.match(install, /scan-mode:\s*full/i);
+  assert.match(install, /db-proof:\s*required/i);
+  assert.match(catalog, /full static/i);
+  assert.match(catalog, /fails? closed/i);
+  assert.match(catalog, /GitHub runner/i);
+  assert.match(readme, /scan-mode:\s*full/i);
+  assert.match(readme, /exit code\s*`?3`?/i);
+  assert.match(readme, /rlsautotest/i);
+  assert.match(readme, /disposable|dedicated test/i);
+});
+
 test('mobile bento panels contain horizontally scrollable evidence instead of widening the page', async () => {
   const css = await read('app/globals.css');
 
