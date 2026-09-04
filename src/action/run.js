@@ -80,6 +80,7 @@ function summaryMarkdown(report, reportPath, scanMode, baselineResult) {
   if (baselineResult) {
     lines.push(
       `- **Static regressions:** ${baselineResult.regressions}`,
+      `- **Severity escalations:** ${baselineResult.severityEscalations}`,
       `- **Resolved baseline findings:** ${baselineResult.resolvedFindings}`,
       `- **Accepted existing findings:** ${baselineResult.acceptedExistingFindings}`,
     );
@@ -158,6 +159,8 @@ export async function runAction(argv = process.argv.slice(2)) {
         resolvedFindings: baselineResult.resolvedFindings,
         acceptedExistingFindings: baselineResult.acceptedExistingFindings,
         severityEscalations: baselineResult.severityEscalations,
+        regressionDetails: baselineResult.regressionDetails,
+        resolvedFindingIds: baselineResult.resolvedFindingIds,
       },
     } : {}),
     proof: {
