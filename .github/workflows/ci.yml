@@ -27,16 +27,13 @@ jobs:
       - name: Test
         run: npm test
       - name: Production build
+        env:
+          NEXT_PUBLIC_SITE_URL: https://psycholog1sts.github.io/personal-app
         run: npm run build
-      - name: Verify static export
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -f out/index.html
-          test -f out/privacy/index.html
-          test -f out/terms/index.html
-          test -f out/robots.txt
-          test -f out/sitemap.xml
+      - name: Verify static publication
+        env:
+          NEXT_PUBLIC_SITE_URL: https://psycholog1sts.github.io/personal-app
+        run: npm run verify:site
 
   action-contract:
     runs-on: ubuntu-latest

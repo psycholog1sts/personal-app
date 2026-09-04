@@ -16,6 +16,7 @@
     "i18n:check": "node scripts/validate-locales.js",
     "prebuild": "npm run i18n:check",
     "build": "next build",
+    "verify:site": "node scripts/verify-static-site.mjs",
     "test": "node --test test/*.test.js",
     "test:core": "node --test test/core.test.js",
     "scan:self": "node src/cli.js scan . --native-only --json"

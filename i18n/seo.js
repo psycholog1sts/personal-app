@@ -42,6 +42,8 @@ export function buildPageMetadata({ locale, pathname = '/', title, description, 
   const base = normalizeSiteUrl(siteUrl);
   const canonicalPath = getLocalizedPath(locale, pathname);
   const canonical = base ? buildAbsoluteUrl(base, canonicalPath) : undefined;
+  const openGraphImage = base ? `${base}/opengraph-image` : undefined;
+  const twitterImage = base ? `${base}/twitter-image` : undefined;
 
   return {
     title,
@@ -60,6 +62,20 @@ export function buildPageMetadata({ locale, pathname = '/', title, description, 
       type: 'website',
       locale: localeInfo.ogLocale,
       ...(canonical ? { url: canonical } : {}),
+      ...(openGraphImage ? {
+        images: [{
+          url: openGraphImage,
+          width: 1200,
+          height: 630,
+          alt: 'RLSProof — Supabase RLS and tenant isolation release evidence',
+        }],
+      } : {}),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      ...(twitterImage ? { images: [twitterImage] } : {}),
     },
   };
 }
