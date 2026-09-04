@@ -9,7 +9,9 @@ jobs:
       - uses: psycholog1sts/personal-app@<reviewed-commit-sha>
         with:
           scan-mode: full
-          db-proof: required`;
+          db-proof: required
+          # Optional mature-repo ratchet; commit and review this report first.
+          # baseline-report: .rlsproof/baseline.json`;
 
 const proofSnippet = `# Use a disposable/local/test Supabase stack.
 supabase test db
