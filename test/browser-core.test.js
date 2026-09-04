@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 import { makeFinding } from '../src/core/finding.js';
+import { sha256Hex } from '../src/core/sha256.js';
 
 async function importOrEmpty(specifier) {
   try {
@@ -18,6 +19,17 @@ function json(value, status = 200, headers = {}) {
     headers: { 'content-type': 'application/json', ...headers },
   });
 }
+
+test('browser-safe SHA-256 matches standard vectors', () => {
+  assert.equal(
+    sha256Hex(''),
+    'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+  );
+  assert.equal(
+    sha256Hex('abc'),
+    'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
+  );
+});
 
 test('finding ids stay stable while browser dependency path contains no node imports', async () => {
   const finding = makeFinding({
