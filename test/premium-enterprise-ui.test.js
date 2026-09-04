@@ -22,6 +22,9 @@ test('premium product surface communicates enterprise release-proof value', asyn
   assert.match(page, /PricingSection/);
   assert.match(page, /FaqSection/);
   assert.doesNotMatch(page, /working name/i);
+  assert.match(page, /<table className="proofMatrix"/);
+  assert.match(page, /scope="col"/);
+  assert.match(page, /scope="row"/);
 
   assert.match(pricing, /Launch Proof/);
   assert.match(pricing, /\$499/);
@@ -52,4 +55,7 @@ test('premium product surface communicates enterprise release-proof value', asyn
   assert.match(layout, /Supabase/i);
   assert.match(layout, /tenant isolation/i);
   assert.match(layout, /release gate/i);
+  assert.match(layout, /NEXT_PUBLIC_PUBLIC_INDEXING/);
+  assert.match(layout, /index:\s*allowIndexing/);
+  assert.match(layout, /follow:\s*allowIndexing/);
 });
