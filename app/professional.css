@@ -1,0 +1,289 @@
+:root {
+  --bg: #070a0d;
+  --surface-1: #0d1218;
+  --surface-2: #10171f;
+  --surface-3: #121b23;
+  --border: #202a30;
+  --border-strong: #314047;
+  --text-primary: #f4f7f5;
+  --text-secondary: #9aa5a1;
+  --text-tertiary: #74817d;
+  --success: #57e6a6;
+  --success-strong: #43c991;
+  --warning: #f3c969;
+  --danger: #ff7a7a;
+  --shadow-panel: 0 18px 48px rgba(0, 0, 0, .2);
+  --shadow-float: 0 26px 68px rgba(0, 0, 0, .26);
+}
+
+body {
+  background:
+    radial-gradient(circle at 78% 0%, rgba(87, 230, 166, .055), transparent 31rem),
+    linear-gradient(180deg, #070a0d 0, #080c10 44rem, #070a0d 100%);
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 16px;
+}
+
+body::before {
+  opacity: .055;
+  background-size: 56px 56px;
+}
+
+.shell {
+  width: min(1220px, calc(100% - 56px));
+}
+
+.siteHeaderWrap {
+  border-bottom-color: rgba(49, 64, 71, .55);
+  background: rgba(7, 10, 13, .88);
+  backdrop-filter: blur(12px);
+}
+
+.siteHeader {
+  min-height: 68px;
+  gap: 32px;
+}
+
+.brand {
+  font-size: 1.18rem;
+  letter-spacing: -.035em;
+}
+
+.primaryNav {
+  gap: 24px;
+  font-size: .84rem;
+}
+
+.navCta {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding-inline: 15px;
+  border-color: rgba(87, 230, 166, .28);
+  background: rgba(23, 61, 48, .38);
+  color: #dff9ed;
+}
+
+.section {
+  padding: 96px 0;
+}
+
+.sectionHeading {
+  margin-bottom: 42px;
+}
+
+.sectionHeading h2 {
+  font-size: clamp(2.15rem, 3.9vw, 3.45rem);
+  line-height: 1.04;
+  letter-spacing: -.042em;
+}
+
+.splitHeading {
+  gap: 72px;
+}
+
+.splitHeading > p {
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.eyebrow,
+.panelKicker {
+  margin-bottom: 12px;
+  letter-spacing: .12em;
+  font-size: .72rem;
+}
+
+.primaryButton,
+.secondaryButton,
+.disabledButton {
+  min-height: 46px;
+  padding: 11px 17px;
+  border-radius: 9px;
+}
+
+.primaryButton {
+  box-shadow: none;
+}
+
+.primaryButton:hover {
+  background: #78ecba;
+}
+
+.secondaryButton {
+  background: rgba(16, 23, 31, .72);
+}
+
+.hero {
+  min-height: auto;
+  grid-template-columns: minmax(0, 1fr) minmax(480px, .96fr);
+  gap: 72px;
+  align-items: center;
+  padding: 94px 0 112px;
+}
+
+.hero h1 {
+  max-width: 680px;
+  font-size: clamp(3rem, 4.65vw, 4rem);
+  line-height: .99;
+  letter-spacing: -.048em;
+  text-wrap: balance;
+}
+
+.heroText {
+  max-width: 640px;
+  margin-top: 25px;
+  font-size: 1.075rem;
+  line-height: 1.72;
+}
+
+.heroActions {
+  margin-top: 30px;
+  gap: 11px;
+}
+
+.heroDisclaimer {
+  margin-top: 14px;
+  font-size: .78rem;
+}
+
+.heroTrustGrid {
+  max-width: 650px;
+  margin-top: 36px;
+}
+
+.heroTrustGrid > div {
+  grid-template-columns: 126px 1fr;
+  padding: 14px 0;
+}
+
+.heroTrustGrid strong,
+.heroTrustGrid span {
+  font-size: .78rem;
+}
+
+.productHalo {
+  opacity: .42;
+  filter: blur(44px);
+}
+
+.releaseConsole {
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(16, 23, 31, .98), rgba(9, 13, 17, .99));
+  box-shadow: var(--shadow-float);
+}
+
+.headlineMetric {
+  background: #0a0e12;
+}
+
+.heroMiniGrid {
+  box-shadow: 0 14px 36px rgba(0, 0, 0, .17);
+}
+
+.signalStrip {
+  background: rgba(10, 14, 18, .72);
+}
+
+.proofFrame,
+.findingsExplorer,
+.coveragePanel,
+.evidencePanel,
+.scannerCard,
+.installPanel,
+.priceCard {
+  box-shadow: var(--shadow-panel);
+}
+
+.priceCard {
+  min-height: 410px;
+}
+
+.featuredPrice {
+  box-shadow: 0 18px 48px rgba(87, 230, 166, .045);
+}
+
+.footer {
+  min-height: 168px;
+}
+
+@media (max-width: 1080px) {
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 54px;
+  }
+
+  .heroProduct {
+    width: min(760px, 100%);
+  }
+}
+
+@media (max-width: 980px) {
+  .shell {
+    width: min(100% - 40px, 1220px);
+  }
+
+  .hero {
+    padding: 74px 0 88px;
+  }
+
+  .section {
+    padding: 84px 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .shell {
+    width: min(100% - 36px, 1220px);
+  }
+
+  .siteHeader {
+    min-height: 64px;
+  }
+
+  .hero {
+    gap: 42px;
+    padding: 58px 0 72px;
+  }
+
+  .hero h1 {
+    max-width: 17ch;
+    font-size: clamp(2.4rem, 11.3vw, 2.75rem);
+    line-height: 1.01;
+    letter-spacing: -.04em;
+  }
+
+  .heroText {
+    font-size: 1rem;
+    line-height: 1.68;
+  }
+
+  .heroActions > * {
+    width: 100%;
+  }
+
+  .heroTrustGrid > div {
+    grid-template-columns: 1fr;
+  }
+
+  .section {
+    padding: 68px 0;
+  }
+
+  .sectionHeading h2 {
+    font-size: clamp(2rem, 9vw, 2.55rem);
+  }
+
+  .splitHeading {
+    gap: 16px;
+  }
+
+  .releaseConsole {
+    border-radius: 16px;
+  }
+
+  .footer {
+    min-height: 0;
+    padding: 38px 0 44px;
+  }
+}
