@@ -7,11 +7,13 @@ async function read(path) {
 }
 
 test('premium product surface communicates enterprise release-proof value', async () => {
-  const [page, css, layout, scanner] = await Promise.all([
+  const [page, css, layout, scanner, pricing, faq] = await Promise.all([
     read('app/page.js'),
     read('app/globals.css'),
     read('app/layout.js'),
     read('app/components/ScannerForm.js'),
+    read('app/components/PricingSection.js'),
+    read('app/components/FaqSection.js'),
   ]);
 
   assert.match(page, /Ship Supabase changes with proof, not hope\./);
@@ -19,16 +21,24 @@ test('premium product surface communicates enterprise release-proof value', asyn
   assert.match(page, /CapabilityBento/);
   assert.match(page, /PricingSection/);
   assert.match(page, /FaqSection/);
-  assert.match(page, /Launch Proof/);
-  assert.match(page, /Fix \+ Verify/);
-  assert.match(page, /Private beta/);
   assert.doesNotMatch(page, /working name/i);
+
+  assert.match(pricing, /Launch Proof/);
+  assert.match(pricing, /\$499/);
+  assert.match(pricing, /Fix \+ Verify/);
+  assert.match(pricing, /\$990/);
+  assert.match(pricing, /Private beta/);
+  assert.match(pricing, /validation-stage pilot offers/i);
 
   assert.match(scanner, /Quick assessment/);
   assert.match(scanner, /Risk posture/);
   assert.match(scanner, /Coverage/);
   assert.match(scanner, /Findings/);
   assert.match(scanner, /Next action/);
+
+  assert.match(faq, /penetration test or security certification/i);
+  assert.match(faq, /source code leave the browser/i);
+  assert.match(faq, /check cannot run/i);
 
   assert.match(css, /--surface-raised:/);
   assert.match(css, /--state-pass:/);
