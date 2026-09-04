@@ -16,24 +16,24 @@ supabase test db
 # Required mode blocks when DB proof is missing.
 db-proof: required`;
 
-export default function InstallPanel() {
+export default function InstallPanel({ copy }) {
   return (
     <section className="section shell" id="install" aria-labelledby="install-title">
       <div className="sectionHeading splitHeading">
-        <div><p className="eyebrow">Developer-native onboarding</p><h2 id="install-title">Install once. Gate the changes automatically.</h2></div>
-        <p>Pin reviewed immutable action SHAs. Run database authorization proof only against disposable, local or dedicated test environments.</p>
+        <div><p className="eyebrow">{copy.eyebrow}</p><h2 id="install-title">{copy.title}</h2></div>
+        <p>{copy.body}</p>
       </div>
       <div className="installGrid">
         <article className="codePanel">
-          <div className="codePanelHead"><span>GitHub Actions</span><span className="sampleBadge">Template</span></div>
+          <div className="codePanelHead"><span>{copy.actionTitle}</span><span className="sampleBadge">{copy.templateBadge}</span></div>
           <pre><code>{actionSnippet}</code></pre>
         </article>
         <article className="codePanel">
-          <div className="codePanelHead"><span>Supabase DB proof</span><span className="gatePill gateRequired">REQUIRED</span></div>
+          <div className="codePanelHead"><span>{copy.dbTitle}</span><span className="gatePill gateRequired">REQUIRED</span></div>
           <pre><code>{proofSnippet}</code></pre>
         </article>
       </div>
-      <p className="installWarning"><strong>Safety boundary:</strong> never run destructive authorization fixtures against a production database. Use an isolated test stack and review generated tests before execution.</p>
+      <p className="installWarning"><strong>{copy.safetyTitle}</strong> {copy.safetyBody}</p>
     </section>
   );
 }

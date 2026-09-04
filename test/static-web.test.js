@@ -13,6 +13,8 @@ test('web app is a browser-only static export for GitHub Pages', async () => {
   const scanner = await read('app/components/ScannerForm.js');
   const config = await read('next.config.mjs');
   const privacy = await read('app/privacy/page.js');
+  const englishDictionary = await read('i18n/dictionaries/en.js');
+  const privacySurface = `${privacy}\n${englishDictionary}`;
 
   assert.match(scanner, /browserQuickScanGithubRepo/);
   assert.doesNotMatch(scanner, /['"]\/api\/scan['"]/);
@@ -24,6 +26,7 @@ test('web app is a browser-only static export for GitHub Pages', async () => {
   assert.equal(existsSync(new URL('app/api/scan/route.js', root)), false);
   assert.equal(existsSync(new URL('app/api/health/route.js', root)), false);
 
-  assert.match(privacy, /runs in your browser/i);
-  assert.doesNotMatch(privacy, /temporary directory/i);
+  assert.match(privacy, /getDictionary\(['"]en['"]\)/);
+  assert.match(privacySurface, /runs in your browser/i);
+  assert.doesNotMatch(privacySurface, /temporary directory/i);
 });

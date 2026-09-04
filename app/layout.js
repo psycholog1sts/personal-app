@@ -1,27 +1,23 @@
 import './globals.css';
+import { getLocale } from '../i18n/config.js';
+import { getDictionary } from '../i18n/get-dictionary.js';
+import { buildPageMetadata } from '../i18n/seo.js';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '');
-const description = 'Continuous Supabase authorization release gate for AI-built apps: test RLS and tenant isolation, expose coverage, block regressions, and re-test fixes before release.';
+const copy = getDictionary('en');
+const locale = getLocale('en');
 
-export const metadata = {
-  title: 'RLSProof — Supabase Authorization Release Gate',
-  description,
-  ...(siteUrl ? {
-    metadataBase: new URL(siteUrl),
-    alternates: { canonical: siteUrl },
-  } : {}),
-  robots: { index: true, follow: true },
-  openGraph: {
-    title: 'RLSProof — Supabase Authorization Release Gate',
-    description,
-    type: 'website',
-    ...(siteUrl ? { url: siteUrl } : {}),
-  },
-};
+export const metadata = buildPageMetadata({
+  locale: 'en',
+  pathname: '/',
+  title: copy.meta.home.title,
+  description: copy.meta.home.description,
+  siteUrl,
+});
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang={locale.htmlLang} dir={locale.dir}>
       <body>{children}</body>
     </html>
   );

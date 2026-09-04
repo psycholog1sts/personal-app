@@ -1,21 +1,16 @@
-const checks = [
-  ['Static security', 'EXECUTED', 'Native + pinned engines'],
-  ['Tenant isolation', 'EXECUTED', '12 identity / operation checks'],
-  ['Policy drift', 'EXECUTED', 'Migration posture compared'],
-  ['Fix verification', 'EXECUTED', '3 remediations re-tested'],
-];
+const checkStates = ['EXECUTED', 'EXECUTED', 'EXECUTED', 'EXECUTED'];
 
-export default function ReleaseConsole() {
+export default function ReleaseConsole({ copy }) {
   return (
-    <section className="releaseConsole" aria-label="Sample release gate evidence">
+    <section className="releaseConsole" aria-label={copy.ariaLabel}>
       <div className="consoleChrome" aria-hidden="true">
         <span /><span /><span />
         <code>release / checkout-refactor #184</code>
       </div>
       <div className="consoleTopline">
         <div>
-          <p className="panelKicker">Sample release gate</p>
-          <h2>Authorization boundary</h2>
+          <p className="panelKicker">{copy.kicker}</p>
+          <h2>{copy.title}</h2>
         </div>
         <span className="gatePill gateClear">CLEAR</span>
       </div>
@@ -23,27 +18,27 @@ export default function ReleaseConsole() {
       <div className="headlineMetric">
         <div>
           <span className="metricValue">0</span>
-          <span className="metricLabel">cross-tenant leaks observed</span>
+          <span className="metricLabel">{copy.leaksLabel}</span>
         </div>
         <div className="metricAside">
           <strong>18 / 18</strong>
-          <span>required checks executed</span>
+          <span>{copy.requiredExecuted}</span>
         </div>
       </div>
 
       <div className="consoleCheckList">
-        {checks.map(([label, state, detail]) => (
-          <div className="consoleCheck" key={label}>
+        {copy.checks.map((check, index) => (
+          <div className="consoleCheck" key={check.id}>
             <span className="checkMark" aria-hidden="true">✓</span>
-            <div><strong>{label}</strong><span>{detail}</span></div>
-            <b>{state}</b>
+            <div><strong>{check.label}</strong><span>{check.detail}</span></div>
+            <b>{checkStates[index]}</b>
           </div>
         ))}
       </div>
 
       <div className="consoleFooter">
-        <span>Commit <code>8f31c9a</code></span>
-        <span>Evidence scope <strong>sample</strong></span>
+        <span>{copy.commitLabel} <code>8f31c9a</code></span>
+        <span>{copy.evidenceScope} <strong>{copy.sample}</strong></span>
       </div>
     </section>
   );

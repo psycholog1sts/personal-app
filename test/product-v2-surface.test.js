@@ -31,6 +31,7 @@ async function readSurface() {
     'app/components/TrustMethodology.js',
     'app/components/PricingSection.js',
     'app/components/FaqSection.js',
+    'i18n/dictionaries/en.js',
   ];
 
   return (await Promise.all(paths.map(readOrEmpty))).join('\n');
@@ -58,11 +59,8 @@ test('premium command center exposes explicit proof coverage, install, trust and
   const page = await read('app/page.js');
   const css = await read('app/globals.css');
   const layout = await read('app/layout.js');
-  const coverage = await readOrEmpty('app/components/CoveragePanel.js');
-  const releaseConsole = await readOrEmpty('app/components/ReleaseConsole.js');
+  const catalog = await read('i18n/dictionaries/en.js');
   const install = await readOrEmpty('app/components/InstallPanel.js');
-  const trust = await readOrEmpty('app/components/TrustMethodology.js');
-  const faq = await readOrEmpty('app/components/FaqSection.js');
 
   assert.match(page, /HeroCommandCenter/);
   assert.match(page, /ProofMatrix/);
@@ -76,23 +74,22 @@ test('premium command center exposes explicit proof coverage, install, trust and
   assert.match(css, /prefers-reduced-motion/);
   assert.match(css, /focus-visible/);
 
-  assert.match(layout, /release gate/i);
-  assert.match(layout, /tenant isolation/i);
-
-  assert.match(coverage, /Executed/i);
-  assert.match(coverage, /Passed/i);
-  assert.match(coverage, /Failed/i);
-  assert.match(coverage, /Skipped/i);
-  assert.match(coverage, /Unavailable/i);
-  assert.match(coverage, /never a PASS/i);
-
-  assert.match(releaseConsole, /Sample/i);
-  assert.match(releaseConsole, /release gate/i);
+  assert.match(layout, /buildPageMetadata/);
+  assert.match(layout, /getDictionary/);
+  assert.match(catalog, /release gate/i);
+  assert.match(catalog, /tenant isolation/i);
+  assert.match(catalog, /Executed/i);
+  assert.match(catalog, /Passed/i);
+  assert.match(catalog, /Failed/i);
+  assert.match(catalog, /Skipped/i);
+  assert.match(catalog, /Unavailable/i);
+  assert.match(catalog, /never a PASS/i);
+  assert.match(catalog, /Sample/i);
   assert.match(install, /db-proof/i);
   assert.match(install, /required/i);
-  assert.match(trust, /browser/i);
-  assert.match(trust, /not a security certification/i);
-  assert.match(faq, /production database/i);
+  assert.match(catalog, /browser/i);
+  assert.match(catalog, /not a security certification/i);
+  assert.match(catalog, /production database/i);
 });
 
 test('mobile bento panels contain horizontally scrollable evidence instead of widening the page', async () => {

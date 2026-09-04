@@ -7,7 +7,7 @@ function severityLabel(value) {
   return typeof value === 'string' ? value.toUpperCase() : 'UNKNOWN';
 }
 
-export default function ScannerForm({ checkoutUrl }) {
+export default function ScannerForm({ checkoutUrl, copy }) {
   const [repository, setRepository] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -23,20 +23,20 @@ export default function ScannerForm({ checkoutUrl }) {
       const payload = await browserQuickScanGithubRepo(repository.trim());
       setReport(payload);
     } catch (scanError) {
-      setError(scanError?.message ?? 'Scan failed.');
+      setError(scanError?.message ?? copy.fallbackError);
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <section className="scannerCard" id="scan" aria-label="Free repository scanner">
+    <section className="scannerCard" id="scan" aria-label={copy.ariaLabel}>
       <div className="scannerIntro">
         <span className="statusDot" aria-hidden="true" />
-        <span>Free public-repo quick scan</span>
+        <span>{copy.intro}</span>
       </div>
       <form onSubmit={onSubmit}>
-        <label htmlFor="repository">GitHub repository</label>
+        <label htmlFor="repository">{copy.repositoryLabel}</label>
         <div className="inputRow">
           <input
             id="repository"
@@ -44,17 +44,17 @@ export default function ScannerForm({ checkoutUrl }) {
             type="text"
             autoComplete="off"
             spellCheck="false"
-            placeholder="https://github.com/owner/repo"
+            placeholder={copy.placeholder}
             value={repository}
             onChange={(event) => setRepository(event.target.value)}
             maxLength={200}
             required
           />
           <button className="primaryButton" type="submit" disabled={loading}>
-            {loading ? 'Scanning…' : 'Scan free'}
+            {loading ? copy.scanning : copy.submit}
           </button>
         </div>
-        <p className="formNote">Public repositories only. The bounded scan runs in your browser and never claims full coverage.</p>
+        <p className="formNote">{copy.note}</p>
       </form>
 
       {error ? <p className="errorBox" role="alert">{error}</p> : null}
@@ -63,7 +63,7 @@ export default function ScannerForm({ checkoutUrl }) {
         <div className="report" aria-live="polite">
           <div className="reportTop">
             <div>
-              <p className="reportKicker">Readiness score</p>
+              <p className="reportKicker">{copy.readinessScore}</p>
               <p className="score">{report.readiness?.score ?? '—'}<span>/100</span></p>
             </div>
             <div className={`gate gate-${report.releaseGate ?? 'incomplete'}`}>
@@ -72,21 +72,21 @@ export default function ScannerForm({ checkoutUrl }) {
           </div>
 
           <div className="coverageNote">
-            <strong>Quick-scan coverage is partial.</strong>{' '}
-            {report.coverage?.reason ?? 'Run a full audit before treating the repository as release-ready.'}
+            <strong>{copy.partialTitle}</strong>{' '}
+            {report.coverage?.reason ?? copy.partialFallback}
           </div>
 
           <div className="scanStats">
-            <span>{report.scope?.filesScanned ?? 0} files scanned</span>
-            <span>{Math.ceil((report.scope?.bytesScanned ?? 0) / 1024)} KB analyzed</span>
-            <span>{report.findings?.length ?? 0} findings</span>
+            <span>{report.scope?.filesScanned ?? 0} {copy.filesScanned}</span>
+            <span>{Math.ceil((report.scope?.bytesScanned ?? 0) / 1024)} {copy.kbAnalyzed}</span>
+            <span>{report.findings?.length ?? 0} {copy.findingsLabel}</span>
           </div>
 
           <div className="findings">
             {(report.findings ?? []).length === 0 ? (
               <article className="finding cleanFinding">
-                <h3>No blocker found by the bounded checks</h3>
-                <p>This is not a full security clearance. External engines and runtime authorization tests have not run.</p>
+                <h3>{copy.noBlockerTitle}</h3>
+                <p>{copy.noBlockerBody}</p>
               </article>
             ) : (
               report.findings.map((finding) => (
@@ -94,12 +94,12 @@ export default function ScannerForm({ checkoutUrl }) {
                   <div className="findingHeader">
                     <span className={`severity severity-${finding.severity}`}>{severityLabel(finding.severity)}</span>
                     <span className="findingPath">
-                      {finding.path ?? 'repository'}{finding.line ? `:${finding.line}` : ''}
+                      {finding.path ?? copy.repositoryFallback}{finding.line ? `:${finding.line}` : ''}
                     </span>
                   </div>
                   <h3>{finding.title}</h3>
                   <p className="evidence">{finding.evidence}</p>
-                  <p><strong>Fix:</strong> {finding.remediation}</p>
+                  <p><strong>{copy.fixLabel}</strong> {finding.remediation}</p>
                 </article>
               ))
             )}
@@ -107,14 +107,14 @@ export default function ScannerForm({ checkoutUrl }) {
 
           <div className="auditUpsell">
             <div>
-              <p className="reportKicker">Need evidence before launch?</p>
-              <h3>Full Launch Audit — $149</h3>
-              <p>Gitleaks + OSV-Scanner + Opengrep, reviewed findings, and a verification report.</p>
+              <p className="reportKicker">{copy.upsellKicker}</p>
+              <h3>{copy.upsellTitle}</h3>
+              <p>{copy.upsellBody}</p>
             </div>
             {checkoutUrl ? (
-              <a className="primaryButton" href={checkoutUrl} rel="noreferrer">Buy full audit</a>
+              <a className="primaryButton" href={checkoutUrl} rel="noreferrer">{copy.buyAudit}</a>
             ) : (
-              <span className="disabledButton" aria-disabled="true">Checkout being configured</span>
+              <span className="disabledButton" aria-disabled="true">{copy.checkoutPending}</span>
             )}
           </div>
         </div>
