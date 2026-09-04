@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
+import { buildWebSiteStructuredData, serializeStructuredData } from '../i18n/structured-data.js';
+
 const root = new URL('../', import.meta.url);
 const read = (filePath) => readFile(new URL(filePath, root), 'utf8');
 
@@ -41,14 +43,20 @@ test('sitemap and public navigation include the security page', async () => {
   assert.match(home, /copy\.footer\.security/);
 });
 
-test('WebSite structured data stays truthful and cannot smuggle review claims', async () => {
+test('WebSite structured data stays truthful, safely serialized and free of review claims', async () => {
   assert.equal(await exists('i18n/structured-data.js'), true);
   const source = await read('i18n/structured-data.js');
+  const data = buildWebSiteStructuredData('https://example.com/product/?ignored=1#ignored', '<unsafe>');
 
-  assert.match(source, /['"]@type['"]:\s*['"]WebSite['"]/);
-  assert.match(source, /name:\s*['"]RLSProof['"]/);
+  assert.equal(data['@type'], 'WebSite');
+  assert.equal(data.name, 'RLSProof');
+  assert.equal(data.url, 'https://example.com/product/');
+  assert.equal(buildWebSiteStructuredData('javascript:alert(1)'), null);
   assert.doesNotMatch(source, /aggregateRating|review|ratingValue|Organization/i);
-  assert.match(source, /replaceAll\(['"]<['"],\s*['"]\\u003c['"]\)/);
+
+  const serialized = serializeStructuredData(data);
+  assert.equal(serialized.includes('<'), false);
+  assert.equal(serialized.includes('\\u003c'), true);
 });
 
 test('custom not-found page is explicitly non-indexable', async () => {
