@@ -1,10 +1,20 @@
 import Link from 'next/link';
 import { getDictionary } from '../../i18n/get-dictionary.js';
+import { buildPageMetadata } from '../../i18n/seo.js';
 
-export const metadata = { title: 'Terms — RLSProof' };
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '');
+const dictionary = getDictionary('en');
+
+export const metadata = buildPageMetadata({
+  locale: 'en',
+  pathname: '/terms',
+  title: dictionary.meta.terms.title,
+  description: dictionary.meta.terms.description,
+  siteUrl,
+});
 
 export default function TermsPage() {
-  const copy = getDictionary('en').legal.terms;
+  const copy = dictionary.legal.terms;
 
   return (
     <main className="shell legal">
