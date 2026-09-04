@@ -13,6 +13,8 @@
   },
   "scripts": {
     "dev": "next dev",
+    "i18n:check": "node scripts/validate-locales.js",
+    "prebuild": "npm run i18n:check",
     "build": "next build",
     "test": "node --test test/*.test.js",
     "test:core": "node --test test/core.test.js",
