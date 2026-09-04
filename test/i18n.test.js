@@ -82,7 +82,7 @@ test('dictionary validator rejects missing, extra, empty, type and placeholder d
 
 test('published dictionary loader is strict and never falls back to English', () => {
   const english = getDictionary('en');
-  assert.match(english.hero.title, /User B access User A/i);
+  assert.match(english.hero.title, /Prove your Supabase data boundaries before release/i);
   assert.deepEqual(validatePublishedDictionaries(), { ok: true, errors: [] });
   assert.throws(() => getDictionary('ja'), /not published/i);
   assert.throws(() => getDictionary('xx'), /unknown locale/i);
