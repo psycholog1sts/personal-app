@@ -31,9 +31,9 @@ test('homepage owns its metadata and keeps global landmarks in semantic order', 
   assert.match(page, /export const metadata = buildPageMetadata/);
   assert.match(page, /<SiteHeader copy=\{copy\.nav\} \/>/);
   assert.match(page, /<main id="main-content">/);
-  assert.match(page, /<footer className="footer shell">/);
+  assert.match(page, /<SiteFooter copy=\{copy\.footer\} \/>/);
   assert.ok(page.indexOf('<SiteHeader copy={copy.nav} />') < page.indexOf('<main id="main-content">'));
-  assert.ok(page.indexOf('</main>') < page.indexOf('<footer className="footer shell">'));
+  assert.ok(page.indexOf('</main>') < page.indexOf('<SiteFooter copy={copy.footer} />'));
 });
 
 test('mobile navigation remains available without client-side JavaScript', async () => {
@@ -48,6 +48,8 @@ test('all public content pages expose a skip-link target', async () => {
   const paths = [
     'app/page.js',
     'app/security/page.js',
+    'app/about/page.js',
+    'app/contact/page.js',
     'app/privacy/page.js',
     'app/terms/page.js',
     'app/not-found.js',

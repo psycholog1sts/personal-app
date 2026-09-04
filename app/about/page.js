@@ -9,29 +9,35 @@ const dictionary = getDictionary('en');
 
 export const metadata = buildPageMetadata({
   locale: 'en',
-  pathname: '/privacy',
-  title: dictionary.meta.privacy.title,
-  description: dictionary.meta.privacy.description,
+  pathname: '/about',
+  title: dictionary.meta.about.title,
+  description: dictionary.meta.about.description,
   siteUrl,
 });
 
-export default function PrivacyPage() {
-  const copy = dictionary.legal.privacy;
+export default function AboutPage() {
+  const copy = dictionary.about;
 
   return (
     <>
       <SiteHeader copy={dictionary.nav} homeAnchors />
       <main id="main-content" className="shell legal publicContentPage">
-        <p className="eyebrow">{copy.brand}</p>
+        <p className="eyebrow">{copy.eyebrow}</p>
         <h1>{copy.title}</h1>
+        <p className="securityIntro">{copy.intro}</p>
         <p>{copy.updated}</p>
+
         {copy.sections.map((section) => (
           <section key={section.id}>
             <h2>{section.heading}</h2>
             <p>{section.body}</p>
           </section>
         ))}
-        <p><Link href="/contact">Contact</Link></p>
+
+        <div className="securityLinks">
+          <Link href="/security">{copy.securityLabel}</Link>
+          <Link href="/contact">{copy.contactLabel}</Link>
+        </div>
       </main>
       <SiteFooter copy={dictionary.footer} />
     </>

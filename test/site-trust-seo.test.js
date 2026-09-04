@@ -31,16 +31,20 @@ test('public trust architecture exposes a dedicated security page', async () => 
   assert.match(dictionary, /disposable, local or dedicated test/i);
 });
 
-test('sitemap and public navigation include the security page', async () => {
-  const [sitemap, dictionary, home] = await Promise.all([
+test('sitemap and public navigation include the security page through shared site chrome', async () => {
+  const [sitemap, dictionary, home, footer] = await Promise.all([
     read('app/sitemap.js'),
     read('i18n/dictionaries/en.js'),
     read('app/page.js'),
+    read('app/components/SiteFooter.js'),
   ]);
 
   assert.match(sitemap, /pathname:\s*'\/security'/);
   assert.match(dictionary, /label:\s*'Security',\s*href:\s*'\/security'/);
-  assert.match(home, /copy\.footer\.security/);
+  assert.match(home, /SiteFooter/);
+  assert.match(home, /copy=\{copy\.footer\}/);
+  assert.match(footer, /copy\.security/);
+  assert.match(footer, /href="\/security"/);
 });
 
 test('WebSite structured data stays truthful, safely serialized and free of review claims', async () => {

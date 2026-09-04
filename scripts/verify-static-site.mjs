@@ -19,7 +19,10 @@ function assertNoLocalhost(name, html) {
 
 function assertPage({ name, html, canonical, expectSocial = true }) {
   assertNoLocalhost(name, html);
+  assert.match(html, /<header\b[^>]*class="[^"]*siteHeaderWrap/i, `${name} needs the shared site header`);
   assert.match(html, /<main\b[^>]*id="main-content"/i, `${name} needs the skip-link target`);
+  assert.match(html, /<footer\b[^>]*class="[^"]*footer[^"]*shell|<footer\b[^>]*class="[^"]*shell[^"]*footer/i, `${name} needs the shared site footer`);
+  assert.match(html, /<details[^>]+class="mobileNav"/i, `${name} needs no-JS mobile navigation`);
 
   const canonicals = values(html, /<link[^>]+rel="canonical"[^>]+href="([^"]+)"[^>]*>/gi);
   assert.deepEqual(canonicals, [canonical], `${name} canonical mismatch`);
@@ -35,17 +38,22 @@ function assertPage({ name, html, canonical, expectSocial = true }) {
   assert.ok(icons.includes(`${siteUrl}/icon.svg`), `${name} needs the base-path-safe favicon`);
 }
 
-const [home, security, privacy, terms, notFound, sitemap] = await Promise.all([
+const [home, security, about, contact, privacy, terms, notFound, sitemap, securityTxt] = await Promise.all([
   read('index.html'),
   read('security/index.html'),
+  read('about/index.html'),
+  read('contact/index.html'),
   read('privacy/index.html'),
   read('terms/index.html'),
   read('404.html'),
   read('sitemap.xml'),
+  read('.well-known/security.txt'),
 ]);
 
 assertPage({ name: 'home', html: home, canonical: `${siteUrl}/` });
 assertPage({ name: 'security', html: security, canonical: `${siteUrl}/security/` });
+assertPage({ name: 'about', html: about, canonical: `${siteUrl}/about/` });
+assertPage({ name: 'contact', html: contact, canonical: `${siteUrl}/contact/` });
 assertPage({ name: 'privacy', html: privacy, canonical: `${siteUrl}/privacy/` });
 assertPage({ name: 'terms', html: terms, canonical: `${siteUrl}/terms/` });
 
@@ -56,7 +64,6 @@ assert.match(notFound, /The requested RLSProof page could not be found\./, '404 
 assert.match(notFound, /<main\b[^>]*id="main-content"/i, '404 needs the skip-link target');
 
 assert.match(home, /class="skipLink"[^>]+href="#main-content"|href="#main-content"[^>]+class="skipLink"/i, 'home needs a keyboard skip link');
-assert.match(home, /<details[^>]+class="mobileNav"/i, 'home needs no-JS mobile navigation');
 assert.match(home, /"@type":"WebSite"/, 'home needs truthful WebSite structured data');
 assert.doesNotMatch(home, /aggregateRating|ratingValue/i, 'home must not publish fabricated rating schema');
 
@@ -64,10 +71,16 @@ for (const asset of ['opengraph-image', 'twitter-image', 'icon.svg']) {
   await readFile(resolve(root, asset));
 }
 
+assert.match(securityTxt, /^Contact:\s+https:\/\/github\.com\/psycholog1sts\/personal-app\/security/m);
+assert.match(securityTxt, /^Policy:\s+https:\/\/github\.com\/psycholog1sts\/personal-app\/blob\/main\/SECURITY\.md/m);
+assert.match(securityTxt, new RegExp(`^Canonical:\\s+${siteUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\/\\.well-known\\/security\\.txt$`, 'm'));
+
 const sitemapUrls = values(sitemap, /<loc>([^<]+)<\/loc>/gi);
 assert.deepEqual(sitemapUrls, [
   `${siteUrl}/`,
   `${siteUrl}/security/`,
+  `${siteUrl}/about/`,
+  `${siteUrl}/contact/`,
   `${siteUrl}/privacy/`,
   `${siteUrl}/terms/`,
 ]);
