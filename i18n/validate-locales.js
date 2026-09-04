@@ -1,3 +1,5 @@
+const invariantStringKeys = new Set(['id', 'href', 'price']);
+
 function valueType(value) {
   if (Array.isArray(value)) return 'array';
   if (value === null) return 'null';
@@ -24,6 +26,10 @@ function walk(source, candidate, path, errors) {
 
   if (sourceType === 'string') {
     if (candidate.trim().length === 0) pushError(errors, path, 'empty localized string');
+    const key = path.split('.').at(-1)?.replace(/\[\d+\]$/, '');
+    if (invariantStringKeys.has(key) && candidate !== source) {
+      pushError(errors, path, `invariant value mismatch; expected ${source}, received ${candidate}`);
+    }
     const expected = placeholders(source);
     const actual = placeholders(candidate);
     if (expected.join('|') !== actual.join('|')) {
