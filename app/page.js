@@ -12,13 +12,23 @@ import SiteHeader from './components/SiteHeader.js';
 import TrustMethodology from './components/TrustMethodology.js';
 import WorkflowTimeline from './components/WorkflowTimeline.js';
 import { getDictionary } from '../i18n/get-dictionary.js';
+import { buildWebSiteStructuredData, serializeStructuredData } from '../i18n/structured-data.js';
 
 export default function Home() {
   const checkoutUrl = process.env.AUDIT_CHECKOUT_URL ?? '';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? '';
   const copy = getDictionary('en');
+  const structuredData = buildWebSiteStructuredData(siteUrl, copy.meta.home.description);
 
   return (
     <main>
+      {structuredData ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: serializeStructuredData(structuredData) }}
+        />
+      ) : null}
+
       <SiteHeader copy={copy.nav} />
       <HeroCommandCenter copy={copy.hero} releaseConsoleCopy={copy.releaseConsole} />
 
@@ -53,7 +63,12 @@ export default function Home() {
       <footer className="footer shell">
         <div><strong>RLSProof</strong><span>{copy.footer.tagline}</span></div>
         <p>{copy.footer.disclaimer}</p>
-        <nav aria-label={copy.footer.legalLabel}><Link href="/privacy">{copy.footer.privacy}</Link><Link href="/terms">{copy.footer.terms}</Link></nav>
+        <nav aria-label={copy.footer.legalLabel}>
+          <Link href="/security">{copy.footer.security}</Link>
+          <Link href="/privacy">{copy.footer.privacy}</Link>
+          <Link href="/terms">{copy.footer.terms}</Link>
+          <a href="https://github.com/psycholog1sts/personal-app" rel="noreferrer">{copy.footer.repository}</a>
+        </nav>
       </footer>
     </main>
   );
