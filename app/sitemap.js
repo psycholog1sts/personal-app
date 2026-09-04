@@ -9,6 +9,7 @@ export default function sitemap() {
   const lastModified = new Date();
   const routes = [
     { pathname: '/', changeFrequency: 'weekly', priority: 1 },
+    { pathname: '/security', changeFrequency: 'monthly', priority: 0.7 },
     { pathname: '/privacy', changeFrequency: 'monthly', priority: 0.2 },
     { pathname: '/terms', changeFrequency: 'monthly', priority: 0.2 },
   ];
