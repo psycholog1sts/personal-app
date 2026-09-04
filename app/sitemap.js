@@ -1,3 +1,5 @@
+import { getPublishedLocalizedUrls } from '../i18n/seo.js';
+
 export const dynamic = 'force-static';
 
 export default function sitemap() {
@@ -5,9 +7,16 @@ export default function sitemap() {
   if (!siteUrl) return [];
 
   const lastModified = new Date();
-  return [
-    { url: siteUrl, lastModified, changeFrequency: 'weekly', priority: 1 },
-    { url: `${siteUrl}/privacy`, lastModified, changeFrequency: 'monthly', priority: 0.2 },
-    { url: `${siteUrl}/terms`, lastModified, changeFrequency: 'monthly', priority: 0.2 },
+  const routes = [
+    { pathname: '/', changeFrequency: 'weekly', priority: 1 },
+    { pathname: '/privacy', changeFrequency: 'monthly', priority: 0.2 },
+    { pathname: '/terms', changeFrequency: 'monthly', priority: 0.2 },
   ];
+
+  return routes.flatMap((route) => getPublishedLocalizedUrls(route.pathname, siteUrl).map((url) => ({
+    url,
+    lastModified,
+    changeFrequency: route.changeFrequency,
+    priority: route.priority,
+  })));
 }
