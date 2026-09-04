@@ -30,6 +30,7 @@ export function parseOsvJson(raw) {
           path: sourcePath,
           line: null,
           evidence: `${packageName}@${version} affected by ${id}`,
+          fingerprintSource: `${packageName}\u0000${version}\u0000${id}`,
           remediation: `Upgrade ${packageName} to a non-vulnerable version supported by the advisory, then re-run dependency tests and Guardian verification.`,
         }));
       }
