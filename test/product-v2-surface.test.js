@@ -110,16 +110,15 @@ test('onboarding documents fail-closed full static coverage separately from DB p
 
 test('onboarding presents baseline ratcheting as optional legacy-adoption control, not a coverage bypass', async () => {
   const install = await read('app/components/InstallPanel.js');
-  const catalog = await read('i18n/dictionaries/en.js');
   const readme = await read('README.md');
 
   assert.match(install, /baseline-report/i);
-  assert.match(catalog, /baseline|legacy findings/i);
-  assert.match(catalog, /does not|never/i);
+  assert.match(install, /optional mature-repo ratchet/i);
   assert.match(readme, /baseline-report/i);
   assert.match(readme, /same scan mode|matching static engine/i);
   assert.match(readme, /DB proof/i);
   assert.match(readme, /new|severity-escalated/i);
+  assert.match(readme, /does \*\*not\*\* weaken|does not weaken/i);
 });
 
 test('mobile bento panels contain horizontally scrollable evidence instead of widening the page', async () => {
