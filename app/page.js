@@ -73,7 +73,7 @@ export default function Home() {
             {checkoutUrl ? (
               <a className="primaryButton" href={checkoutUrl} rel="noreferrer">Buy launch audit</a>
             ) : (
-              <span className="disabledButton" aria-disabled="true">Checkout being configured</span>
+              <span className="disabledButton" aria-disabled="true">Payment activation pending</span>
             )}
           </article>
           <article className="priceCard">
