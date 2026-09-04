@@ -10,6 +10,15 @@ function mapSeverity(value) {
   return 'medium';
 }
 
+function upstreamFingerprint(result, message) {
+  const value = result?.extra?.fingerprint
+    ?? result?.fingerprint
+    ?? result?.extra?.match_based_id
+    ?? result?.extra?.matchBasedId
+    ?? result?.extra?.match_based_key;
+  return value == null || value === '' ? message : `opengrep:${String(value)}`;
+}
+
 export function parseOpengrepJson(raw) {
   const parsed = JSON.parse(raw || '{}');
   const findings = [];
@@ -25,6 +34,7 @@ export function parseOpengrepJson(raw) {
       path: result?.path ? String(result.path) : null,
       line: Number.isInteger(result?.start?.line) ? result.start.line : null,
       evidence: message,
+      fingerprintSource: upstreamFingerprint(result, message),
       remediation: 'Review the flagged code path, apply the rule-specific secure coding fix, and re-run RLSProof verification before release.',
     }));
   }
