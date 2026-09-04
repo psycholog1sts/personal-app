@@ -17,7 +17,7 @@ export default function PrivacyPage() {
   const copy = dictionary.legal.privacy;
 
   return (
-    <main className="shell legal">
+    <main id="main-content" className="shell legal">
       <p className="eyebrow">{copy.brand}</p>
       <h1>{copy.title}</h1>
       <p>{copy.updated}</p>

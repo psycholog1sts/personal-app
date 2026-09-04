@@ -14,7 +14,7 @@ test('root document keeps semantic language, main content and labelled navigatio
   ]);
 
   assert.match(layout, /<html lang=\{locale\.htmlLang\} dir=\{locale\.dir\}>/);
-  assert.match(page, /<main>/);
+  assert.match(page, /<main\b[^>]*id="main-content"/);
   assert.match(header, /<header className="siteHeaderWrap">/);
   assert.match(header, /aria-label=\{copy\.primaryLabel\}/);
   assert.equal((hero.match(/<h1\b/g) ?? []).length, 1);
@@ -30,6 +30,8 @@ test('site keeps keyboard, reduced-motion and touch-target accessibility safegua
   assert.match(baseCss, /prefers-reduced-motion:\s*reduce/);
   assert.match(baseCss, /min-height:\s*44px/);
   assert.match(professionalCss, /min-height:\s*46px/);
+  assert.match(professionalCss, /\.skipLink/);
+  assert.match(professionalCss, /\.mobileNav/);
 });
 
 test('professional visual layer stays static-first and dependency-free', async () => {
@@ -49,13 +51,15 @@ test('professional visual layer stays static-first and dependency-free', async (
 });
 
 test('homepage metadata is concise, product-specific and contains no meta-keyword strategy', async () => {
-  const [dictionary, seo] = await Promise.all([
+  const [dictionary, seo, page] = await Promise.all([
     read('i18n/dictionaries/en.js'),
     read('i18n/seo.js'),
+    read('app/page.js'),
   ]);
 
   assert.match(dictionary, /RLSProof — Supabase RLS & Tenant Isolation Checks/);
   assert.match(dictionary, /Test Supabase RLS and tenant isolation/);
+  assert.match(page, /buildPageMetadata/);
   assert.doesNotMatch(dictionary, /AI-built apps|keyword stuffing|meta keywords/i);
   assert.doesNotMatch(seo, /\bkeywords\s*:/i);
 });

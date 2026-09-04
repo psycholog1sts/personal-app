@@ -17,7 +17,7 @@ export default function SecurityPage() {
   const copy = dictionary.security;
 
   return (
-    <main className="shell legal securityPage">
+    <main id="main-content" className="shell legal securityPage">
       <p className="eyebrow">{copy.eyebrow}</p>
       <h1>{copy.title}</h1>
       <p className="securityIntro">{copy.intro}</p>

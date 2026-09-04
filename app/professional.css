@@ -33,6 +33,28 @@ body::before {
   width: min(1220px, calc(100% - 56px));
 }
 
+.skipLink {
+  position: fixed;
+  top: 12px;
+  left: 16px;
+  z-index: 200;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 14px;
+  border: 1px solid var(--success);
+  border-radius: 9px;
+  background: var(--surface-1);
+  color: var(--text-primary);
+  font-weight: 800;
+  transform: translateY(-180%);
+  transition: transform .12s ease;
+}
+
+.skipLink:focus {
+  transform: translateY(0);
+}
+
 .siteHeaderWrap {
   border-bottom-color: rgba(49, 64, 71, .55);
   background: rgba(7, 10, 13, .88);
@@ -62,6 +84,72 @@ body::before {
   border-color: rgba(87, 230, 166, .28);
   background: rgba(23, 61, 48, .38);
   color: #dff9ed;
+}
+
+.mobileNav {
+  display: none;
+  position: relative;
+}
+
+.mobileNav summary {
+  min-width: 72px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  list-style: none;
+  cursor: pointer;
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  background: rgba(16, 23, 31, .9);
+  color: var(--text-primary);
+  font-size: .82rem;
+  font-weight: 800;
+}
+
+.mobileNav summary::-webkit-details-marker {
+  display: none;
+}
+
+.mobileNav[open] summary {
+  border-color: rgba(87, 230, 166, .4);
+}
+
+.mobileNav nav {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: min(290px, calc(100vw - 40px));
+  display: grid;
+  padding: 9px;
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  background: rgba(10, 15, 20, .98);
+  box-shadow: var(--shadow-panel);
+}
+
+.mobileNav nav a {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: .86rem;
+  font-weight: 700;
+}
+
+.mobileNav nav a:hover,
+.mobileNav nav a:focus-visible {
+  background: var(--surface-3);
+  color: var(--text-primary);
+}
+
+.mobileNav nav .mobileNavCta {
+  margin-top: 6px;
+  justify-content: center;
+  background: var(--success);
+  color: #06100c;
 }
 
 .section {
@@ -223,6 +311,19 @@ body::before {
     width: min(100% - 40px, 1220px);
   }
 
+  .siteHeader {
+    grid-template-columns: 1fr auto;
+  }
+
+  .primaryNav,
+  .navCta {
+    display: none;
+  }
+
+  .mobileNav {
+    display: block;
+  }
+
   .hero {
     padding: 74px 0 88px;
   }
@@ -238,6 +339,7 @@ body::before {
   }
 
   .siteHeader {
+    grid-template-columns: 1fr auto;
     min-height: 64px;
   }
 
