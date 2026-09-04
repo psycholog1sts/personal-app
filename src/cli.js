@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 
+import { writeFile } from 'node:fs/promises';
 import { scanProject } from './scan.js';
 import { readReport, renderReport, writeReport } from './report.js';
+import { buildSarif } from './sarif.js';
 import { verifyReport } from './verify.js';
 import { redactEvidence } from './core/redact.js';
 
@@ -13,6 +15,7 @@ function usage() {
     '  rlsproof scan <path> [--native-only|--full] [--opengrep-config <file>] [--json] [--out <file>]',
     '  rlsproof report <report-file> [--json]',
     '  rlsproof verify <report-file> <path> [--native-only|--full] [--opengrep-config <file>] [--json]',
+    '  rlsproof sarif <report-file> [--out <file>]',
   ].join('\n');
 }
 
@@ -112,6 +115,20 @@ async function runVerify(args) {
   process.stdout.write(options.json ? `${JSON.stringify(verification, null, 2)}\n` : renderVerification(verification));
 }
 
+async function runSarif(args) {
+  const { options, positionals } = parseArgs(args);
+  if (options.json || options.opengrepConfig || options.full || options.nativeOnly !== undefined) {
+    throw new Error('sarif accepts only an optional --out file');
+  }
+  if (positionals.length !== 1) throw new Error('sarif requires exactly one RLSProof report file');
+
+  const report = await readReport(positionals[0]);
+  const sarif = buildSarif(report);
+  const serialized = `${JSON.stringify(sarif, null, 2)}\n`;
+  if (options.out) await writeFile(options.out, serialized, 'utf8');
+  process.stdout.write(serialized);
+}
+
 export async function main(argv = process.argv.slice(2)) {
   const [command, ...args] = argv;
   if (!command || command === '--help' || command === '-h' || command === 'help') {
@@ -122,6 +139,7 @@ export async function main(argv = process.argv.slice(2)) {
   if (command === 'scan') return runScan(args);
   if (command === 'report') return runReport(args);
   if (command === 'verify') return runVerify(args);
+  if (command === 'sarif') return runSarif(args);
   throw new Error(`Unknown command: ${command}\n\n${usage()}`);
 }
 
