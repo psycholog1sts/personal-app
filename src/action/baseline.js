@@ -15,7 +15,7 @@ function assertReportShape(report, label) {
   }
 }
 
-function validateFindingIds(findings, label) {
+function validateFindingIds(findings, label, { rejectResolved = false } = {}) {
   const ids = new Set();
   for (const finding of findings) {
     if (!finding || typeof finding !== 'object') throw new TypeError(`${label} contains an invalid finding`);
@@ -26,6 +26,9 @@ function validateFindingIds(findings, label) {
     ids.add(finding.id);
     if (!SEVERITY_RANK.has(finding.severity)) {
       throw new TypeError(`${label} contains unsupported severity: ${finding.severity}`);
+    }
+    if (rejectResolved && finding.verification === 'resolved') {
+      throw new TypeError(`${label} contains a resolved finding and cannot represent an accepted current-state snapshot`);
     }
   }
 }
@@ -40,6 +43,10 @@ function normalizeEngines(report, label) {
   return [...unique].sort();
 }
 
+function sameArray(left, right) {
+  return left.length === right.length && left.every((value, index) => value === right[index]);
+}
+
 function assertCompleteBaselineCoverage(report, engines) {
   if (report.coverage?.complete !== true) {
     throw new TypeError('baseline static coverage must be complete');
@@ -50,8 +57,18 @@ function assertCompleteBaselineCoverage(report, engines) {
 
   const capabilities = new Map();
   for (const capability of report.coverage.capabilities) {
-    if (!capability || typeof capability.engine !== 'string') continue;
+    if (!capability || typeof capability.engine !== 'string' || capability.engine.trim() === '') {
+      throw new TypeError('baseline contains an invalid capability record');
+    }
+    if (capabilities.has(capability.engine)) {
+      throw new TypeError(`baseline contains duplicate capability for engine: ${capability.engine}`);
+    }
     capabilities.set(capability.engine, capability);
+  }
+
+  const capabilityEngines = [...capabilities.keys()].sort();
+  if (!sameArray(capabilityEngines, engines)) {
+    throw new TypeError('baseline capabilities must match the declared static engine scope');
   }
 
   for (const engine of engines) {
@@ -60,10 +77,6 @@ function assertCompleteBaselineCoverage(report, engines) {
       throw new TypeError(`baseline capability for ${engine} must prove complete coverage`);
     }
   }
-}
-
-function sameArray(left, right) {
-  return left.length === right.length && left.every((value, index) => value === right[index]);
 }
 
 function determineRegressionGate(regressions, coverageComplete) {
@@ -77,7 +90,10 @@ function determineRegressionGate(regressions, coverageComplete) {
 export function evaluateRegressionBaseline(baselineReport, currentReport) {
   assertReportShape(baselineReport, 'baseline report');
   assertReportShape(currentReport, 'current report');
-  validateFindingIds(baselineReport.findings, 'baseline report');
+  if (baselineReport.type === 'verification') {
+    throw new TypeError('baseline report must be a scan snapshot, not a verification report');
+  }
+  validateFindingIds(baselineReport.findings, 'baseline report', { rejectResolved: true });
   validateFindingIds(currentReport.findings, 'current report');
 
   const baselineEngines = normalizeEngines(baselineReport, 'baseline report');
@@ -92,29 +108,41 @@ export function evaluateRegressionBaseline(baselineReport, currentReport) {
   const baselineById = new Map(baselineReport.findings.map((finding) => [finding.id, finding]));
   const currentById = new Map(currentReport.findings.map((finding) => [finding.id, finding]));
   const regressionFindings = [];
+  const regressionDetails = [];
   let severityEscalations = 0;
 
   for (const finding of currentReport.findings) {
     const previous = baselineById.get(finding.id);
     if (!previous) {
       regressionFindings.push(finding);
+      regressionDetails.push({ id: finding.id, reason: 'new' });
       continue;
     }
     if (SEVERITY_RANK.get(finding.severity) > SEVERITY_RANK.get(previous.severity)) {
       regressionFindings.push(finding);
+      regressionDetails.push({
+        id: finding.id,
+        reason: 'severity-escalated',
+        previousSeverity: previous.severity,
+        currentSeverity: finding.severity,
+      });
       severityEscalations += 1;
     }
   }
 
-  const resolvedFindings = baselineReport.findings.filter((finding) => !currentById.has(finding.id));
+  const resolvedFindingIds = baselineReport.findings
+    .filter((finding) => !currentById.has(finding.id))
+    .map((finding) => finding.id);
 
   return {
     mode: 'regression',
     gate: determineRegressionGate(regressionFindings, currentReport.coverage?.complete === true),
     regressions: regressionFindings.length,
-    resolvedFindings: resolvedFindings.length,
+    resolvedFindings: resolvedFindingIds.length,
     acceptedExistingFindings: currentReport.findings.length - regressionFindings.length,
     severityEscalations,
     regressionFindings,
+    regressionDetails,
+    resolvedFindingIds,
   };
 }
