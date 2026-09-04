@@ -26,10 +26,6 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22'
-      - name: Configure Pages
-        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
-        with:
-          static_site_generator: next
       - name: Install
         run: npm install --ignore-scripts --no-audit --no-fund
       - name: Test
