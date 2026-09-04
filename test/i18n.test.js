@@ -11,7 +11,12 @@ import {
 } from '../i18n/config.js';
 import { getDictionary, validatePublishedDictionaries } from '../i18n/get-dictionary.js';
 import { getLocalizedPath } from '../i18n/get-localized-path.js';
-import { validateDictionary } from '../i18n/validate-locales.js';
+import {
+  buildPageMetadata,
+  getAlternateLanguages,
+  getPublishedLocalizedUrls,
+} from '../i18n/seo.js';
+import { validateDictionary, validateLocaleRegistry } from '../i18n/validate-locales.js';
 
 const root = new URL('../', import.meta.url);
 const read = (relativePath) => readFile(new URL(relativePath, root), 'utf8');
@@ -31,6 +36,11 @@ test('i18n registry publishes only English and keeps future locales draft', () =
   assert.equal(assertPublishedLocale('en').code, 'en');
   assert.throws(() => assertPublishedLocale('ja'), /not published/i);
   assert.throws(() => assertPublishedLocale('xx'), /unknown locale/i);
+  assert.deepEqual(validateLocaleRegistry(localeRegistry, defaultLocale), { ok: true, errors: [] });
+
+  const duplicate = localeRegistry.map((locale) => ({ ...locale }));
+  duplicate[1].slug = duplicate[0].slug;
+  assert.equal(validateLocaleRegistry(duplicate, defaultLocale).ok, false);
 });
 
 test('localized paths use registered locale slugs without prefixing English', () => {
@@ -104,4 +114,34 @@ test('public presentation components consume explicit copy instead of owning can
   assert.doesNotMatch(scanner, /Scan failed\./);
   assert.match(dictionary, /Can User B access User A/);
   assert.match(dictionary, /Scan failed\./);
+});
+
+test('SEO publication helpers expose only published locales and preserve GitHub Pages base paths', () => {
+  const siteUrl = 'https://psycholog1sts.github.io/personal-app';
+  const alternates = getAlternateLanguages('/privacy', siteUrl);
+  assert.deepEqual(alternates, {
+    en: 'https://psycholog1sts.github.io/personal-app/privacy',
+    'x-default': 'https://psycholog1sts.github.io/personal-app/privacy',
+  });
+  assert.equal(Object.values(alternates).some((url) => url.includes('/ja/')), false);
+  assert.deepEqual(getPublishedLocalizedUrls('/privacy', siteUrl), ['https://psycholog1sts.github.io/personal-app/privacy']);
+
+  const metadata = buildPageMetadata({
+    locale: 'en',
+    pathname: '/privacy',
+    title: 'Privacy — RLSProof',
+    description: 'Privacy information.',
+    siteUrl,
+  });
+  assert.equal(metadata.alternates.canonical, 'https://psycholog1sts.github.io/personal-app/privacy');
+  assert.equal(metadata.openGraph.locale, 'en_US');
+  assert.equal(metadata.openGraph.url, 'https://psycholog1sts.github.io/personal-app/privacy');
+});
+
+test('package scripts enforce locale validation before production builds', async () => {
+  const pkg = JSON.parse(await read('package.json'));
+  assert.equal(pkg.scripts['i18n:check'], 'node scripts/validate-locales.js');
+  assert.equal(pkg.scripts.prebuild, 'npm run i18n:check');
+  assert.equal(Object.prototype.hasOwnProperty.call(pkg.dependencies, 'next-intl'), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(pkg.dependencies, 'react-intl'), false);
 });
