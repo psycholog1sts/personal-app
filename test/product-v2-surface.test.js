@@ -74,8 +74,10 @@ test('premium command center exposes explicit proof coverage, install, trust and
   assert.match(css, /prefers-reduced-motion/);
   assert.match(css, /focus-visible/);
 
-  assert.match(layout, /buildPageMetadata/);
-  assert.match(layout, /getDictionary/);
+  assert.match(page, /buildPageMetadata/);
+  assert.match(page, /getDictionary/);
+  assert.match(layout, /getLocale/);
+  assert.match(layout, /skipLink/);
   assert.match(catalog, /release gate/i);
   assert.match(catalog, /tenant isolation/i);
   assert.match(catalog, /Executed/i);
