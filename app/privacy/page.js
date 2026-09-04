@@ -1,10 +1,20 @@
 import Link from 'next/link';
 import { getDictionary } from '../../i18n/get-dictionary.js';
+import { buildPageMetadata } from '../../i18n/seo.js';
 
-export const metadata = { title: 'Privacy — RLSProof' };
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '');
+const dictionary = getDictionary('en');
+
+export const metadata = buildPageMetadata({
+  locale: 'en',
+  pathname: '/privacy',
+  title: dictionary.meta.privacy.title,
+  description: dictionary.meta.privacy.description,
+  siteUrl,
+});
 
 export default function PrivacyPage() {
-  const copy = getDictionary('en').legal.privacy;
+  const copy = dictionary.legal.privacy;
 
   return (
     <main className="shell legal">
