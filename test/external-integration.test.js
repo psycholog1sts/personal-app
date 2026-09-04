@@ -1,5 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { spawn } from 'node:child_process';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -13,6 +16,22 @@ const osvVulnerableFixture = path.join(repoRoot, 'test/fixtures/osv-vulnerable')
 const srcRoot = path.join(repoRoot, 'src');
 const opengrepConfig = path.join(repoRoot, 'config/opengrep.yml');
 const enabled = process.env.GUARDIAN_EXTERNAL_INTEGRATION === '1';
+
+function runNode(args, env = {}) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, args, {
+      cwd: repoRoot,
+      env: { ...process.env, ...env },
+      shell: false,
+    });
+    let stdout = '';
+    let stderr = '';
+    child.stdout.on('data', (chunk) => { stdout += chunk; });
+    child.stderr.on('data', (chunk) => { stderr += chunk; });
+    child.on('error', reject);
+    child.on('close', (code) => resolve({ code, stdout, stderr }));
+  });
+}
 
 function assertExternalCoverage(report) {
   const diagnostics = JSON.stringify(report.coverage.capabilities, null, 2);
@@ -31,6 +50,27 @@ test('pinned external scanners complete a clean full scan', { skip: !enabled }, 
   assertExternalCoverage(report);
   assert.deepEqual(report.findings, []);
   assert.equal(report.releaseGate, 'clear');
+});
+
+test('full action runtime completes the clean fixture with all requested static engines', { skip: !enabled }, async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'rlsproof-full-action-integration-'));
+  const reportPath = path.join(dir, 'report.json');
+  try {
+    const result = await runNode([
+      'src/action/run.js',
+      '--target', 'test/fixtures/clean',
+      '--report', reportPath,
+      '--scan-mode', 'full',
+    ]);
+    assert.equal(result.code, 0, result.stderr || result.stdout);
+    const report = JSON.parse(await readFile(reportPath, 'utf8'));
+    assert.deepEqual(report.scope.requestedEngines, ['native', 'gitleaks', 'osv-scanner', 'opengrep']);
+    assertExternalCoverage(report);
+    assert.deepEqual(report.findings, []);
+    assert.equal(report.releaseGate, 'clear');
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 });
 
 test('OSV treats vulnerability exit status as a completed scan and preserves findings', { skip: !enabled }, async () => {

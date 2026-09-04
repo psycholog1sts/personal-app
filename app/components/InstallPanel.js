@@ -8,6 +8,7 @@ jobs:
       - uses: actions/checkout@<reviewed-commit-sha>
       - uses: psycholog1sts/personal-app@<reviewed-commit-sha>
         with:
+          scan-mode: full
           db-proof: required`;
 
 const proofSnippet = `# Use a disposable/local/test Supabase stack.
@@ -33,6 +34,7 @@ export default function InstallPanel({ copy }) {
           <pre><code>{proofSnippet}</code></pre>
         </article>
       </div>
+      <p className="formNote">{copy.fullModeBody}</p>
       <p className="installWarning"><strong>{copy.safetyTitle}</strong> {copy.safetyBody}</p>
     </section>
   );

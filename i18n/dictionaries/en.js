@@ -185,6 +185,7 @@ export const englishDictionary = {
     actionTitle: 'GitHub Actions',
     templateBadge: 'Template',
     dbTitle: 'Supabase DB proof',
+    fullModeBody: 'Full static mode runs checksum-verified Gitleaks, OSV-Scanner and Opengrep engines in the GitHub runner and fails closed if any requested engine cannot execute. DB proof is a separate authorization-test layer.',
     safetyTitle: 'Safety boundary:',
     safetyBody: 'never run destructive authorization fixtures against a production database. Use an isolated test stack and review generated tests before execution.',
   },
