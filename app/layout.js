@@ -1,18 +1,19 @@
 import './globals.css';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '');
+const description = 'Continuous Supabase authorization release gate for AI-built apps: test RLS and tenant isolation, expose coverage, block regressions, and re-test fixes before release.';
 
 export const metadata = {
-  title: 'RLSProof — Supabase Access-Control Proof',
-  description: 'Free bounded Supabase-focused security and production-readiness scan for public GitHub repositories built with AI tools.',
+  title: 'RLSProof — Supabase Authorization Release Gate',
+  description,
   ...(siteUrl ? {
     metadataBase: new URL(siteUrl),
     alternates: { canonical: siteUrl },
   } : {}),
   robots: { index: true, follow: true },
   openGraph: {
-    title: 'RLSProof — Supabase Access-Control Proof',
-    description: 'Find access-control and production blockers in AI-built Supabase apps before launch.',
+    title: 'RLSProof — Supabase Authorization Release Gate',
+    description,
     type: 'website',
     ...(siteUrl ? { url: siteUrl } : {}),
   },
