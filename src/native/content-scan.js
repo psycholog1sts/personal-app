@@ -51,6 +51,7 @@ function scanCodeFile(filePath, text) {
       path: filePath,
       line: lineNumberFor(text, serviceRoleMatch.index ?? 0),
       evidence: 'service-role credential usage detected; value intentionally omitted',
+      fingerprintSource: serviceRoleMatch[0],
       remediation: 'Keep Supabase service-role credentials server-side only and rotate any credential that may have been exposed to client code.',
     }));
   }
@@ -67,6 +68,7 @@ function scanCodeFile(filePath, text) {
       path: filePath,
       line,
       evidence: rawLine,
+      fingerprintSource: rawLine,
       remediation: 'Remove eval and use a constrained parser or explicit data transformation instead.',
     }));
   }
@@ -95,6 +97,7 @@ function scanSqlSecurityPatterns(filePath, text) {
         path: filePath,
         line,
         evidence: 'RLS policy calls deprecated auth.role(); policy text intentionally omitted',
+        fingerprintSource: statement,
         remediation: 'Target Postgres roles with the policy TO clause (for example TO authenticated or TO anon) and keep authorization predicates separate.',
       }));
     }
@@ -108,6 +111,7 @@ function scanSqlSecurityPatterns(filePath, text) {
         path: filePath,
         line,
         evidence: 'RLS policy references user-editable JWT metadata; policy text intentionally omitted',
+        fingerprintSource: statement,
         remediation: 'Move authorization claims to trusted app_metadata/raw_app_meta_data or a protected table and authorize with server-controlled data.',
       }));
     }
@@ -136,6 +140,7 @@ function scanSqlSecurityPatterns(filePath, text) {
       path: filePath,
       line: lineNumberFor(text, start),
       evidence: `public.${functionName} is declared SECURITY DEFINER`,
+      fingerprintSource: properties,
       remediation: 'Move privileged helper functions to an unexposed schema, set a safe search_path, and revoke EXECUTE from roles that do not require access.',
     }));
   }
@@ -154,6 +159,7 @@ function scanSqlSecurityPatterns(filePath, text) {
       path: filePath,
       line: lineNumberFor(text, match.index ?? 0),
       evidence: `create view public.${viewName} detected without security_invoker = true`,
+      fingerprintSource: statement,
       remediation: 'On PostgreSQL 15+, set security_invoker = true so the caller\'s RLS applies; otherwise revoke anon/authenticated access or move the view to an unexposed schema.',
     }));
   }
@@ -208,6 +214,7 @@ export function scanVirtualFiles(files) {
         path: filePath,
         line: null,
         evidence: `${filePath} exists; file contents were not included in evidence`,
+        fingerprintSource: filePath,
         remediation: 'Keep environment files out of version control, use a secret manager or deployment environment variables, and rotate any exposed credentials.',
       }));
     }
@@ -232,6 +239,7 @@ export function scanVirtualFiles(files) {
       path: location.path,
       line: location.line,
       evidence: `create table public.${table} detected without a matching ENABLE ROW LEVEL SECURITY statement in scanned SQL migrations`,
+      fingerprintSource: `public.${table}`,
       remediation: `Enable RLS for public.${table} and define least-privilege policies before exposing the table through the Supabase Data API.`,
     }));
   }

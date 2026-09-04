@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
-import { appendFile } from 'node:fs/promises';
+import { appendFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { scanProject } from '../scan.js';
 import { readReport, writeReport } from '../report.js';
+import { buildSarif } from '../sarif.js';
 import { redactEvidence } from '../core/redact.js';
 import { evaluateRegressionBaseline } from './baseline.js';
 import { combineReleaseGate, evaluateDbProof } from './db-proof.js';
@@ -13,10 +14,15 @@ const SCAN_MODES = new Set(['native', 'full']);
 const moduleDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(moduleDirectory, '../..');
 
+function samePath(left, right) {
+  return Boolean(left && right && path.resolve(left) === path.resolve(right));
+}
+
 function parseArgs(argv) {
   const options = {
     target: process.env.RLSPROOF_TARGET || '.',
     reportPath: process.env.RLSPROOF_REPORT_PATH || 'rlsproof-report.json',
+    sarifPath: process.env.RLSPROOF_SARIF_PATH || '',
     dbProofMode: process.env.RLSPROOF_DB_PROOF || 'off',
     scanMode: process.env.RLSPROOF_SCAN_MODE || 'native',
     baselineReport: process.env.RLSPROOF_BASELINE_REPORT || '',
@@ -24,11 +30,12 @@ function parseArgs(argv) {
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
-    if (arg === '--target' || arg === '--report' || arg === '--db-proof' || arg === '--scan-mode' || arg === '--baseline-report') {
+    if (arg === '--target' || arg === '--report' || arg === '--sarif' || arg === '--db-proof' || arg === '--scan-mode' || arg === '--baseline-report') {
       const value = argv[index + 1];
       if (!value || value.startsWith('--')) throw new Error(`${arg} requires a value`);
       if (arg === '--target') options.target = value;
       else if (arg === '--report') options.reportPath = value;
+      else if (arg === '--sarif') options.sarifPath = value;
       else if (arg === '--db-proof') options.dbProofMode = value;
       else if (arg === '--scan-mode') options.scanMode = value;
       else options.baselineReport = value;
@@ -42,8 +49,14 @@ function parseArgs(argv) {
     throw new TypeError(`scan-mode must be one of: ${[...SCAN_MODES].join(', ')}`);
   }
 
-  if (options.baselineReport && path.resolve(options.baselineReport) === path.resolve(options.reportPath)) {
+  if (samePath(options.baselineReport, options.reportPath)) {
     throw new TypeError('baseline report path and report path must be different; RLSProof never overwrites the configured baseline');
+  }
+  if (samePath(options.sarifPath, options.reportPath)) {
+    throw new TypeError('SARIF path and report path must be different so normalized and SARIF evidence cannot overwrite each other');
+  }
+  if (samePath(options.sarifPath, options.baselineReport)) {
+    throw new TypeError('SARIF path and baseline report path must be different; RLSProof never overwrites the configured baseline');
   }
 
   return options;
@@ -54,7 +67,13 @@ async function appendGithubFile(filePath, text) {
   await appendFile(filePath, text, { encoding: 'utf8' });
 }
 
-function summaryMarkdown(report, reportPath, scanMode, baselineResult) {
+async function writeSarif(report, sarifPath) {
+  if (!sarifPath) return;
+  const sarif = buildSarif(report);
+  await writeFile(sarifPath, `${JSON.stringify(sarif, null, 2)}\n`, 'utf8');
+}
+
+function summaryMarkdown(report, reportPath, sarifPath, scanMode, baselineResult) {
   const gate = String(report.releaseGate ?? 'unknown').toUpperCase();
   const score = report.readiness?.score ?? 'n/a';
   const findings = Array.isArray(report.findings) ? report.findings.length : 0;
@@ -86,11 +105,9 @@ function summaryMarkdown(report, reportPath, scanMode, baselineResult) {
     );
   }
 
-  lines.push(
-    `- **Database proof:** ${dbProof}`,
-    `- **Report:** \`${reportPath}\``,
-    '',
-  );
+  lines.push(`- **Database proof:** ${dbProof}`, `- **Report:** \`${reportPath}\``);
+  if (sarifPath) lines.push(`- **SARIF:** \`${sarifPath}\``);
+  lines.push('');
 
   if (scanMode === 'full' && report.coverage?.complete !== true) {
     lines.push('Full static coverage was requested but one or more external engines did not complete. This run fails closed and is never represented as PASS.');
@@ -108,7 +125,7 @@ function summaryMarkdown(report, reportPath, scanMode, baselineResult) {
   return lines.join('\n');
 }
 
-async function writeOutputs(report, reportPath, scanMode, baselineResult) {
+async function writeOutputs(report, reportPath, sarifPath, scanMode, baselineResult) {
   const output = process.env.GITHUB_OUTPUT;
   if (!output) return;
   const findings = Array.isArray(report.findings) ? report.findings.length : 0;
@@ -117,6 +134,7 @@ async function writeOutputs(report, reportPath, scanMode, baselineResult) {
     `score=${report.readiness?.score ?? ''}`,
     `findings=${findings}`,
     `report-path=${reportPath}`,
+    `sarif-path=${sarifPath}`,
     `db-proof=${report.proof?.database?.status ?? 'off'}`,
     `scan-mode=${scanMode}`,
     `coverage-complete=${report.coverage?.complete === true ? 'true' : 'false'}`,
@@ -135,7 +153,7 @@ function resolveOpengrepConfig() {
 }
 
 export async function runAction(argv = process.argv.slice(2)) {
-  const { target, reportPath, dbProofMode, scanMode, baselineReport } = parseArgs(argv);
+  const { target, reportPath, sarifPath, dbProofMode, scanMode, baselineReport } = parseArgs(argv);
   const staticReport = await scanProject(target, scanMode === 'full'
     ? { nativeOnly: false, opengrepConfig: resolveOpengrepConfig() }
     : { nativeOnly: true });
@@ -169,9 +187,12 @@ export async function runAction(argv = process.argv.slice(2)) {
     },
   };
 
+  // Persist both evidence formats before applying the process exit semantics so
+  // blocked/incomplete runs still leave inspectable artifacts for reviewers.
   await writeReport(report, reportPath);
-  await writeOutputs(report, reportPath, scanMode, baselineResult);
-  await appendGithubFile(process.env.GITHUB_STEP_SUMMARY, summaryMarkdown(report, reportPath, scanMode, baselineResult));
+  await writeSarif(report, sarifPath);
+  await writeOutputs(report, reportPath, sarifPath, scanMode, baselineResult);
+  await appendGithubFile(process.env.GITHUB_STEP_SUMMARY, summaryMarkdown(report, reportPath, sarifPath, scanMode, baselineResult));
 
   const gate = String(report.releaseGate ?? 'unknown');
   const score = report.readiness?.score ?? 'n/a';

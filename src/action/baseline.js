@@ -1,3 +1,5 @@
+import { matchFindingSets } from '../core/match-findings.js';
+
 const SEVERITY_RANK = new Map([
   ['info', 0],
   ['low', 1],
@@ -24,6 +26,9 @@ function validateFindingIds(findings, label, { rejectResolved = false } = {}) {
     }
     if (ids.has(finding.id)) throw new TypeError(`${label} contains duplicate finding id: ${finding.id}`);
     ids.add(finding.id);
+    if (finding.fingerprint != null && (typeof finding.fingerprint !== 'string' || finding.fingerprint.trim() === '')) {
+      throw new TypeError(`${label} contains an invalid finding fingerprint`);
+    }
     if (!SEVERITY_RANK.has(finding.severity)) {
       throw new TypeError(`${label} contains unsupported severity: ${finding.severity}`);
     }
@@ -98,27 +103,28 @@ export function evaluateRegressionBaseline(baselineReport, currentReport) {
 
   const baselineEngines = normalizeEngines(baselineReport, 'baseline report');
   const currentEngines = normalizeEngines(currentReport, 'current report');
-
   if (!sameArray(baselineEngines, currentEngines)) {
     throw new TypeError('baseline report must use the same static engine scope as the current scan');
   }
-
   assertCompleteBaselineCoverage(baselineReport, baselineEngines);
 
-  const baselineById = new Map(baselineReport.findings.map((finding) => [finding.id, finding]));
-  const currentById = new Map(currentReport.findings.map((finding) => [finding.id, finding]));
+  const { pairs, unmatchedPrevious, unmatchedCurrent } = matchFindingSets(
+    baselineReport.findings,
+    currentReport.findings,
+  );
+  const unmatchedCurrentSet = new Set(unmatchedCurrent);
   const regressionFindings = [];
   const regressionDetails = [];
-  let severityEscalations = 0;
 
   for (const finding of currentReport.findings) {
-    const previous = baselineById.get(finding.id);
-    if (!previous) {
+    if (unmatchedCurrentSet.has(finding)) {
       regressionFindings.push(finding);
       regressionDetails.push({ id: finding.id, reason: 'new' });
       continue;
     }
-    if (SEVERITY_RANK.get(finding.severity) > SEVERITY_RANK.get(previous.severity)) {
+
+    const previous = pairs.get(finding);
+    if (previous && SEVERITY_RANK.get(finding.severity) > SEVERITY_RANK.get(previous.severity)) {
       regressionFindings.push(finding);
       regressionDetails.push({
         id: finding.id,
@@ -126,13 +132,11 @@ export function evaluateRegressionBaseline(baselineReport, currentReport) {
         previousSeverity: previous.severity,
         currentSeverity: finding.severity,
       });
-      severityEscalations += 1;
     }
   }
 
-  const resolvedFindingIds = baselineReport.findings
-    .filter((finding) => !currentById.has(finding.id))
-    .map((finding) => finding.id);
+  const resolvedFindingIds = unmatchedPrevious.map((finding) => finding.id);
+  const severityEscalations = regressionDetails.filter((detail) => detail.reason === 'severity-escalated').length;
 
   return {
     mode: 'regression',

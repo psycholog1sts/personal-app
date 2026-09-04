@@ -5,6 +5,24 @@ import path from 'node:path';
 import { makeFinding } from '../core/finding.js';
 import { runTool } from './process.js';
 
+function fingerprintContext(item, rule) {
+  const sourceLine = typeof item?.Line === 'string' ? item.Line : '';
+  if (sourceLine) {
+    const secret = typeof item?.Secret === 'string' ? item.Secret : '';
+    const sanitized = secret
+      ? sourceLine.split(secret).join('<secret>')
+      : sourceLine;
+    const normalized = sanitized.replace(/\s+/g, ' ').trim();
+    if (normalized) return normalized;
+  }
+
+  // Gitleaks fingerprints commonly include the absolute line as the final
+  // segment. Removing only that line component preserves a safer structural
+  // fallback without making line movement look like a new issue.
+  const upstream = typeof item?.Fingerprint === 'string' ? item.Fingerprint.replace(/:\d+$/, '') : '';
+  return upstream || `gitleaks:${rule}`;
+}
+
 export function parseGitleaksJson(raw) {
   const parsed = JSON.parse(raw || '[]');
   if (!Array.isArray(parsed)) throw new TypeError('Gitleaks JSON must be an array');
@@ -20,6 +38,7 @@ export function parseGitleaksJson(raw) {
       path: item?.File ? String(item.File) : null,
       line: Number.isInteger(item?.StartLine) ? item.StartLine : null,
       evidence: `Potential secret detected by Gitleaks rule ${rule}; secret value omitted`,
+      fingerprintSource: fingerprintContext(item, rule),
       remediation: 'Remove the secret from source and history where applicable, rotate the exposed credential, and store credentials in a deployment secret manager.',
     });
   });

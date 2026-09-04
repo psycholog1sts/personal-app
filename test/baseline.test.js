@@ -59,6 +59,50 @@ test('baseline evaluator emits inspectable new, escalated and resolved classific
   assert.deepEqual(current, beforeCurrent);
 });
 
+test('stable fingerprints prevent line-only movement from becoming a regression', () => {
+  const baseline = report([
+    finding('old-line-id', 'high', { fingerprint: 'gfp_same', line: 12, rule: 'dangerous-eval' }),
+  ]);
+  const current = report([
+    finding('new-line-id', 'high', { fingerprint: 'gfp_same', line: 47, rule: 'dangerous-eval' }),
+  ]);
+
+  const result = evaluateRegressionBaseline(baseline, current);
+
+  assert.equal(result.gate, 'clear');
+  assert.equal(result.regressions, 0);
+  assert.equal(result.resolvedFindings, 0);
+  assert.equal(result.acceptedExistingFindings, 1);
+});
+
+test('fingerprint matching is count-aware so an added duplicate occurrence is still new', () => {
+  const baseline = report([
+    finding('old', 'medium', { fingerprint: 'gfp_repeat', line: 10, rule: 'dangerous-eval' }),
+  ]);
+  const current = report([
+    finding('moved', 'medium', { fingerprint: 'gfp_repeat', line: 20, rule: 'dangerous-eval' }),
+    finding('added', 'high', { fingerprint: 'gfp_repeat', line: 30, rule: 'dangerous-eval' }),
+  ]);
+
+  const result = evaluateRegressionBaseline(baseline, current);
+
+  assert.equal(result.gate, 'blocked');
+  assert.equal(result.regressions, 1);
+  assert.deepEqual(result.regressionDetails, [{ id: 'added', reason: 'new' }]);
+  assert.equal(result.resolvedFindings, 0);
+});
+
+test('legacy baseline reports without fingerprints match a new fingerprinted scan by exact id', () => {
+  const baseline = report([finding('legacy', 'medium')]);
+  const current = report([finding('legacy', 'medium', { fingerprint: 'gfp_new_format' })]);
+
+  const result = evaluateRegressionBaseline(baseline, current);
+
+  assert.equal(result.regressions, 0);
+  assert.equal(result.resolvedFindings, 0);
+  assert.equal(result.acceptedExistingFindings, 1);
+});
+
 test('baseline evaluator rejects verification reports and resolved historical findings', () => {
   assert.throws(
     () => evaluateRegressionBaseline(report([], { type: 'verification' }), report([])),
