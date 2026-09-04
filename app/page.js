@@ -51,7 +51,7 @@ export default function Home() {
       <FaqSection copy={copy.faq} />
 
       <footer className="footer shell">
-        <div><strong>RLSProof</strong><span>{copy.footer.workingName}</span></div>
+        <div><strong>RLSProof</strong><span>{copy.footer.tagline}</span></div>
         <p>{copy.footer.disclaimer}</p>
         <nav aria-label={copy.footer.legalLabel}><Link href="/privacy">{copy.footer.privacy}</Link><Link href="/terms">{copy.footer.terms}</Link></nav>
       </footer>
