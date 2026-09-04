@@ -6,6 +6,7 @@ export const englishDictionary = {
     },
     privacy: { title: 'Privacy — RLSProof', description: 'Privacy information for RLSProof Quick Scan and paid verification services.' },
     terms: { title: 'Terms — RLSProof', description: 'Terms for authorized use of RLSProof security-development tools and services.' },
+    security: { title: 'Security & Verification Model — RLSProof', description: 'How RLSProof handles source, coverage, release decisions, scanner supply chain, database proof, and verification limits.' },
   },
   nav: {
     homeLabel: 'RLSProof home',
@@ -16,6 +17,7 @@ export const englishDictionary = {
       { id: 'scan', label: 'Quick Scan', href: '#scan' },
       { id: 'install', label: 'Install', href: '#install' },
       { id: 'pricing', label: 'Pricing', href: '#pricing' },
+      { id: 'security', label: 'Security', href: '/security' },
       { id: 'privacy', label: 'Privacy', href: '/privacy' },
     ],
     cta: 'Run free scan',
@@ -207,6 +209,22 @@ export const englishDictionary = {
       { id: 'certification', question: 'Is this a security certification?', answer: 'No. It is a development-time authorization evidence and release-gate system, not a penetration test, compliance certification or guarantee of security.' },
     ],
   },
+  security: {
+    eyebrow: 'Security model',
+    title: 'Security model and verification boundaries',
+    intro: 'RLSProof is designed to produce inspectable engineering evidence without turning a bounded check into a security guarantee. This page explains what executes, where it executes, and what the resulting release state does and does not mean.',
+    updated: 'Current product behavior · September 4, 2026',
+    sections: [
+      { id: 'deterministic', heading: 'Deterministic release decisions', body: 'Release states are derived from executed checks, observed authorization tests, configured coverage, and explicit gate rules. AI can assist with explanation or remediation text, but it does not decide whether the gate is clear or blocked.' },
+      { id: 'coverage', heading: 'Coverage is explicit', body: 'A skipped or unavailable required check is never presented as PASS. Native checks, external static engines, and database proof report their own capability state so a high score cannot hide missing execution.' },
+      { id: 'privacy', heading: 'Source stays at the execution boundary', body: 'The public Quick Scan requests eligible files from GitHub directly in the browser and analyzes the bounded selection in browser memory. Full GitHub Action scans execute inside the repository runner; RLSProof does not require source upload to a hosted scanner backend for these workflows.' },
+      { id: 'supply-chain', heading: 'External scanner supply chain is pinned', body: 'Full static mode uses version-pinned external scanner binaries and verifies committed SHA-256 digests before execution. GitHub Actions used by the project are pinned to immutable commit SHAs.' },
+      { id: 'database', heading: 'Database proof requires isolation', body: 'Authorization fixtures must run against a disposable, local or dedicated test Supabase/Postgres environment. Destructive tenant-isolation fixtures must not run against production databases.' },
+      { id: 'limits', heading: 'A clear gate is not a certification', body: 'RLSProof is a security-development aid. It does not replace penetration testing, threat modeling, secure code review, cloud configuration review, compliance work, or runtime monitoring, and it cannot guarantee that an application is free of vulnerabilities.' },
+    ],
+    repositoryLabel: 'Inspect the public repository',
+    returnHome: 'Return to RLSProof',
+  },
   legal: {
     privacy: {
       brand: 'RLSProof', title: 'Privacy', updated: 'Last updated: September 4, 2026.',
@@ -233,9 +251,11 @@ export const englishDictionary = {
   footer: {
     tagline: 'Authorization evidence for Supabase teams.',
     disclaimer: 'Security-development aid, not a security certification or compliance attestation.',
-    legalLabel: 'Legal',
+    legalLabel: 'Resources and legal',
+    security: 'Security',
     privacy: 'Privacy',
     terms: 'Terms',
+    repository: 'GitHub',
   },
   a11y: {
     coverageEvidenceExamples: 'Coverage and evidence examples',
