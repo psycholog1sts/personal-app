@@ -15,6 +15,10 @@ inputs:
     description: "Static scan mode: native or full. Full installs and runs pinned Gitleaks, OSV-Scanner and Opengrep engines."
     required: false
     default: native
+  baseline-report:
+    description: "Optional reviewed RLSProof report used as a static regression baseline. Requires complete matching static engine coverage."
+    required: false
+    default: ''
   db-proof:
     description: "Supabase database proof mode: off, auto, or required."
     required: false
@@ -42,6 +46,15 @@ outputs:
   coverage-complete:
     description: Whether all requested static scan engines completed.
     value: ${{ steps.gate.outputs.coverage-complete }}
+  baseline-mode:
+    description: "Static gate mode: off or regression."
+    value: ${{ steps.gate.outputs.baseline-mode }}
+  regressions:
+    description: Number of new or severity-escalated static findings relative to the baseline.
+    value: ${{ steps.gate.outputs.regressions }}
+  resolved-findings:
+    description: Number of baseline static findings absent from the current scan.
+    value: ${{ steps.gate.outputs.resolved-findings }}
 
 runs:
   using: composite
@@ -65,6 +78,7 @@ runs:
         RLSPROOF_TARGET: ${{ inputs.target }}
         RLSPROOF_REPORT_PATH: ${{ inputs.report-path }}
         RLSPROOF_SCAN_MODE: ${{ inputs.scan-mode }}
+        RLSPROOF_BASELINE_REPORT: ${{ inputs.baseline-report }}
         RLSPROOF_DB_PROOF: ${{ inputs.db-proof }}
       run: node "$GITHUB_ACTION_PATH/src/action/run.js"
 

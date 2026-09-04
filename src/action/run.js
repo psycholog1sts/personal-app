@@ -4,8 +4,9 @@ import { appendFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { scanProject } from '../scan.js';
-import { writeReport } from '../report.js';
+import { readReport, writeReport } from '../report.js';
 import { redactEvidence } from '../core/redact.js';
+import { evaluateRegressionBaseline } from './baseline.js';
 import { combineReleaseGate, evaluateDbProof } from './db-proof.js';
 
 const SCAN_MODES = new Set(['native', 'full']);
@@ -18,17 +19,19 @@ function parseArgs(argv) {
     reportPath: process.env.RLSPROOF_REPORT_PATH || 'rlsproof-report.json',
     dbProofMode: process.env.RLSPROOF_DB_PROOF || 'off',
     scanMode: process.env.RLSPROOF_SCAN_MODE || 'native',
+    baselineReport: process.env.RLSPROOF_BASELINE_REPORT || '',
   };
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
-    if (arg === '--target' || arg === '--report' || arg === '--db-proof' || arg === '--scan-mode') {
+    if (arg === '--target' || arg === '--report' || arg === '--db-proof' || arg === '--scan-mode' || arg === '--baseline-report') {
       const value = argv[index + 1];
       if (!value || value.startsWith('--')) throw new Error(`${arg} requires a value`);
       if (arg === '--target') options.target = value;
       else if (arg === '--report') options.reportPath = value;
       else if (arg === '--db-proof') options.dbProofMode = value;
-      else options.scanMode = value;
+      else if (arg === '--scan-mode') options.scanMode = value;
+      else options.baselineReport = value;
       index += 1;
       continue;
     }
@@ -39,6 +42,10 @@ function parseArgs(argv) {
     throw new TypeError(`scan-mode must be one of: ${[...SCAN_MODES].join(', ')}`);
   }
 
+  if (options.baselineReport && path.resolve(options.baselineReport) === path.resolve(options.reportPath)) {
+    throw new TypeError('baseline report path and report path must be different; RLSProof never overwrites the configured baseline');
+  }
+
   return options;
 }
 
@@ -47,7 +54,7 @@ async function appendGithubFile(filePath, text) {
   await appendFile(filePath, text, { encoding: 'utf8' });
 }
 
-function summaryMarkdown(report, reportPath, scanMode) {
+function summaryMarkdown(report, reportPath, scanMode, baselineResult) {
   const gate = String(report.releaseGate ?? 'unknown').toUpperCase();
   const score = report.readiness?.score ?? 'n/a';
   const findings = Array.isArray(report.findings) ? report.findings.length : 0;
@@ -56,31 +63,52 @@ function summaryMarkdown(report, reportPath, scanMode) {
     : 0;
   const dbProof = String(report.proof?.database?.status ?? 'off').toUpperCase();
   const staticCoverage = report.coverage?.complete === true ? 'COMPLETE' : 'INCOMPLETE';
+  const baselineMode = baselineResult ? 'regression' : 'off';
 
-  return [
+  const lines = [
     '## RLSProof release gate',
     '',
     `- **Release gate:** ${gate}`,
     `- **Scan mode:** ${scanMode}`,
     `- **Static coverage:** ${staticCoverage}`,
+    `- **Baseline mode:** ${baselineMode}`,
     `- **Readiness score:** ${score}/100`,
     `- **Findings:** ${findings}`,
     `- **High/Critical:** ${high}`,
+  ];
+
+  if (baselineResult) {
+    lines.push(
+      `- **Static regressions:** ${baselineResult.regressions}`,
+      `- **Severity escalations:** ${baselineResult.severityEscalations}`,
+      `- **Resolved baseline findings:** ${baselineResult.resolvedFindings}`,
+      `- **Accepted existing findings:** ${baselineResult.acceptedExistingFindings}`,
+    );
+  }
+
+  lines.push(
     `- **Database proof:** ${dbProof}`,
     `- **Report:** \`${reportPath}\``,
     '',
-    scanMode === 'full' && report.coverage?.complete !== true
-      ? 'Full static coverage was requested but one or more external engines did not complete. This run fails closed and is never represented as PASS.'
-      : report.proof?.database?.mode !== 'off' && report.proof?.database?.complete !== true
-        ? 'Database proof coverage is incomplete. A skipped or unavailable DB proof is never represented as PASS.'
-        : report.coverage?.complete === true
-          ? 'Requested coverage completed.'
-          : 'Coverage is intentionally bounded in the default GitHub Action. Treat this as a deterministic release signal, not a penetration test.',
-    '',
-  ].join('\n');
+  );
+
+  if (scanMode === 'full' && report.coverage?.complete !== true) {
+    lines.push('Full static coverage was requested but one or more external engines did not complete. This run fails closed and is never represented as PASS.');
+  } else if (report.proof?.database?.mode !== 'off' && report.proof?.database?.complete !== true) {
+    lines.push('Database proof coverage is incomplete. A skipped or unavailable DB proof is never represented as PASS.');
+  } else if (baselineResult) {
+    lines.push('Regression baseline mode gates only newly introduced or severity-escalated static findings. Accepted legacy findings remain visible in the report and readiness score; the baseline does not suppress DB proof or missing coverage.');
+  } else if (report.coverage?.complete === true) {
+    lines.push('Requested coverage completed.');
+  } else {
+    lines.push('Coverage is intentionally bounded in the default GitHub Action. Treat this as a deterministic release signal, not a penetration test.');
+  }
+
+  lines.push('');
+  return lines.join('\n');
 }
 
-async function writeOutputs(report, reportPath, scanMode) {
+async function writeOutputs(report, reportPath, scanMode, baselineResult) {
   const output = process.env.GITHUB_OUTPUT;
   if (!output) return;
   const findings = Array.isArray(report.findings) ? report.findings.length : 0;
@@ -92,6 +120,9 @@ async function writeOutputs(report, reportPath, scanMode) {
     `db-proof=${report.proof?.database?.status ?? 'off'}`,
     `scan-mode=${scanMode}`,
     `coverage-complete=${report.coverage?.complete === true ? 'true' : 'false'}`,
+    `baseline-mode=${baselineResult ? 'regression' : 'off'}`,
+    `regressions=${baselineResult?.regressions ?? 0}`,
+    `resolved-findings=${baselineResult?.resolvedFindings ?? 0}`,
     '',
   ].join('\n'));
 }
@@ -104,14 +135,34 @@ function resolveOpengrepConfig() {
 }
 
 export async function runAction(argv = process.argv.slice(2)) {
-  const { target, reportPath, dbProofMode, scanMode } = parseArgs(argv);
+  const { target, reportPath, dbProofMode, scanMode, baselineReport } = parseArgs(argv);
   const staticReport = await scanProject(target, scanMode === 'full'
     ? { nativeOnly: false, opengrepConfig: resolveOpengrepConfig() }
     : { nativeOnly: true });
+
+  let baselineResult = null;
+  if (baselineReport) {
+    const baseline = await readReport(baselineReport);
+    baselineResult = evaluateRegressionBaseline(baseline, staticReport);
+  }
+
   const databaseProof = await evaluateDbProof({ mode: dbProofMode, target });
+  const effectiveStaticGate = baselineResult?.gate ?? staticReport.releaseGate;
   const report = {
     ...staticReport,
-    releaseGate: combineReleaseGate(staticReport.releaseGate, databaseProof),
+    releaseGate: combineReleaseGate(effectiveStaticGate, databaseProof),
+    ...(baselineResult ? {
+      baseline: {
+        mode: 'regression',
+        absoluteStaticGate: staticReport.releaseGate,
+        regressions: baselineResult.regressions,
+        resolvedFindings: baselineResult.resolvedFindings,
+        acceptedExistingFindings: baselineResult.acceptedExistingFindings,
+        severityEscalations: baselineResult.severityEscalations,
+        regressionDetails: baselineResult.regressionDetails,
+        resolvedFindingIds: baselineResult.resolvedFindingIds,
+      },
+    } : {}),
     proof: {
       ...(staticReport.proof ?? {}),
       database: databaseProof,
@@ -119,12 +170,13 @@ export async function runAction(argv = process.argv.slice(2)) {
   };
 
   await writeReport(report, reportPath);
-  await writeOutputs(report, reportPath, scanMode);
-  await appendGithubFile(process.env.GITHUB_STEP_SUMMARY, summaryMarkdown(report, reportPath, scanMode));
+  await writeOutputs(report, reportPath, scanMode, baselineResult);
+  await appendGithubFile(process.env.GITHUB_STEP_SUMMARY, summaryMarkdown(report, reportPath, scanMode, baselineResult));
 
   const gate = String(report.releaseGate ?? 'unknown');
   const score = report.readiness?.score ?? 'n/a';
-  process.stdout.write(`RLSProof release gate: ${gate} (${score}/100), scan-mode=${scanMode}, db-proof=${databaseProof.status}\n`);
+  const baselineMode = baselineResult ? 'regression' : 'off';
+  process.stdout.write(`RLSProof release gate: ${gate} (${score}/100), scan-mode=${scanMode}, baseline-mode=${baselineMode}, db-proof=${databaseProof.status}\n`);
 
   return {
     report,

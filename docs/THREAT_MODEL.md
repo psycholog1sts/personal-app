@@ -9,6 +9,7 @@ Assets Guardian should protect:
 - Secrets and credentials present in or near scanned source.
 - Source-code confidentiality on the developer workstation or CI runner.
 - Integrity of findings, readiness scores, release-gate decisions, and coverage metadata.
+- Integrity of reviewed regression baselines used to ratchet mature repositories.
 - Integrity of the Guardian process and the CI supply chain used to test it.
 
 ## Trust boundaries
@@ -18,6 +19,7 @@ Assets Guardian should protect:
 3. **Report boundary** — normalized findings may be written to disk or CI logs and therefore must not unnecessarily reproduce secret material.
 4. **CI network boundary** — release binaries downloaded from GitHub are network-supplied artifacts and must not be trusted solely because a download succeeded.
 5. **Rule/configuration boundary** — changing local detection rules can materially change coverage and release-gate results.
+6. **Regression-baseline boundary** — a committed baseline is security-sensitive repository input because modifying it changes which existing static findings are accepted by the ratcheting gate.
 
 ## Threats and mitigations
 
@@ -35,9 +37,9 @@ Assets Guardian should protect:
 
 ### Symlink traversal and unexpected filesystem reach
 
-**Threat:** A crafted source tree could use symbolic links to make the native scanner read outside the intended tree.
+**Threat:** A crafted source tree could use symbolic links to make the native scanner read outside the intended tree, or a baseline symlink could redirect the gate to an unintended report.
 
-**Mitigation:** Native directory traversal skips symbolic links.
+**Mitigation:** Native directory traversal skips symbolic links. Report loading uses `lstat`, rejects symbolic links and requires a normal file before parsing a baseline.
 
 ### Resource exhaustion
 
@@ -56,6 +58,12 @@ Assets Guardian should protect:
 **Threat:** A report could appear healthy even though one or more requested scanners never ran.
 
 **Mitigation:** Reports expose per-engine capability records and a `coverage.complete` flag. Full-mode CI asserts that Gitleaks, OSV-Scanner, and Opengrep are installed and complete successfully. A readiness score must not be interpreted independently of coverage state.
+
+### Baseline tampering or incomparable evidence
+
+**Threat:** A developer could edit a baseline to hide new findings, claim complete coverage that did not execute, compare a native-only baseline against a full scan, introduce ambiguous duplicate finding IDs, or configure the current report to overwrite the accepted baseline.
+
+**Mitigation:** Baseline mode validates schema version, stable unique finding IDs and severities, requires complete baseline coverage backed by successful capability records, and requires the same static engine scope as the current scan. New IDs and severity increases remain regressions. The baseline and output paths must differ. DB proof and current coverage are evaluated independently and are never suppressed by the baseline. Baseline files should be protected by ordinary code review and branch protection because RLSProof does not currently cryptographically attest repository-owned baseline files.
 
 ### Supply-chain compromise or version drift
 
@@ -85,6 +93,8 @@ Assets Guardian should protect:
 - Guardian does not test live Supabase policies, cloud IAM, network exposure, deployed environment variables, authentication flows, SSRF, XSS, SQL injection through runtime data paths, or other dynamic behavior unless a configured static rule happens to detect a source pattern.
 - A correct `coverage.complete` value means the requested engines completed according to their adapter contracts; it does not mean every security-relevant class was tested.
 - SHA-256 verification protects against accidental/malicious artifact substitution only relative to the pinned digest already committed to this repository. Compromise of the upstream release process before digest review remains a supply-chain risk.
+- A committed regression baseline is not signed or externally attested. Repository permissions, review policy, and branch protection therefore remain part of the trust model for any team using baseline mode.
+- Accepted baseline findings remain real security debt. Baseline mode is an adoption ratchet, not evidence that those findings are safe.
 
 ## Security gate used by CI
 

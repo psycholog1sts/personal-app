@@ -90,9 +90,33 @@ jobs:
 - If any requested full-mode engine is missing or fails, the normalized report remains `releaseGate: incomplete`; the Action fails closed with exit code `3` rather than presenting incomplete coverage as PASS.
 - A vulnerability-driven blocked release keeps exit code `2`. General configuration/runtime errors use exit code `1`.
 
-The Action also exposes `scan-mode` and `coverage-complete` outputs so downstream jobs do not have to infer coverage from the score.
+The Action exposes `scan-mode` and `coverage-complete` outputs so downstream jobs do not have to infer coverage from the score.
 
 Static scan coverage and database proof are separate. `scan-mode: full` does not create a Supabase test database, and `db-proof: required` does not imply that external static engines ran.
+
+### Optional regression baseline for mature repositories
+
+Repositories with an existing accepted backlog can adopt a ratcheting gate without pretending the legacy findings disappeared. First generate and review a complete RLSProof report using the **same scan mode / matching static engine scope** that CI will use, commit it as an explicit acceptance artifact, then pass it with `baseline-report`:
+
+```yaml
+- uses: psycholog1sts/personal-app@<reviewed-rlsproof-commit-sha>
+  with:
+    scan-mode: full
+    baseline-report: .rlsproof/baseline.json
+    db-proof: required
+```
+
+Regression mode behaves conservatively:
+
+- A finding ID absent from the baseline is new and is evaluated normally.
+- The same finding ID at a higher severity is a severity-escalated regression.
+- Unchanged legacy static findings remain in the report and readiness score but do not block solely because they already existed in the reviewed baseline.
+- Baseline static coverage must be complete and its requested engines must match the current scan; otherwise the Action fails closed with a configuration error.
+- A baseline cannot also be used as the current output path, so the Action never overwrites the configured acceptance artifact.
+- Baseline mode does **not** weaken DB proof, production-database safety rules, or current static coverage. Required DB proof still blocks independently, and incomplete requested full coverage still exits non-zero.
+- A missing, malformed, symlinked, inconsistent, or ambiguous baseline is rejected instead of silently falling back to a weaker gate.
+
+Baseline mode adds `baseline-mode`, `regressions`, and `resolved-findings` outputs. Treat baseline updates as security-sensitive code review: regenerate intentionally, inspect what is being accepted, and never update the file automatically just to make CI green.
 
 ## Database authorization proof
 
@@ -141,6 +165,7 @@ If `AUDIT_CHECKOUT_URL` is absent, the Launch Audit button remains visibly disab
 - GitHub Actions used by this repository are pinned to immutable commit SHAs.
 - Full-mode scanner binaries are version-pinned and SHA-256 verified before execution.
 - Full mode fails closed on incomplete requested scanner coverage.
+- Regression baselines require complete, matching static engine coverage and never suppress DB-proof failure or incomplete current coverage.
 - CI runs unit/integration tests, the production static build, the composite Action contract, and the external scanner integration contract.
 
 See [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md) for trust boundaries, mitigations and residual risks.
@@ -152,6 +177,8 @@ RLSProof separates **score** from **coverage**. Consumers must inspect `coverage
 OSV-Scanner exit status `1` is treated as a completed scan with vulnerabilities, not an engine failure. A tree with no supported package manifests can still allow the other engines to complete their requested coverage.
 
 For the composite Action, requested full static coverage is operationally fail-closed: an `incomplete` full run exits non-zero even though the report preserves the semantic distinction between a vulnerability block and a capability gap.
+
+When `baseline-report` is configured, only the static finding decision is ratcheted. Coverage completeness and database authorization proof remain absolute controls.
 
 ## Testing
 
@@ -179,6 +206,8 @@ No database or application server is required for the free validation MVP.
 RLSProof does not execute or sandbox the target application, probe third-party infrastructure, test live authentication/authorization behavior, inspect cloud account configuration, perform DAST, or guarantee detection of every secret or vulnerability. Native rules are pattern-based and can produce false positives or false negatives. External scanner databases and behavior can change independently of RLSProof.
 
 The composite full Action currently supports Linux x64 for its verified external binary set. Database proof only executes tests already present under `supabase/tests`; it does not automatically create sound tenant-isolation fixtures.
+
+A regression baseline is an adoption control, not a security waiver: accepted legacy findings remain real findings and require remediation planning. The baseline itself is not signed or externally attested, so repository review and branch protection remain part of the trust model.
 
 Treat findings as engineering evidence requiring review and a clean result as one signal in a broader secure-development process.
 
