@@ -1,3 +1,5 @@
+import { matchFindingSets } from '../core/match-findings.js';
+
 const SEVERITY_RANK = new Map([
   ['info', 0],
   ['low', 1],
@@ -90,40 +92,6 @@ function determineRegressionGate(regressions, coverageComplete) {
   return 'clear';
 }
 
-function lineRank(finding) {
-  return Number.isInteger(finding.line) && finding.line > 0 ? finding.line : Number.MAX_SAFE_INTEGER;
-}
-
-function byLocationThenId(left, right) {
-  const lineDifference = lineRank(left) - lineRank(right);
-  return lineDifference || left.id.localeCompare(right.id);
-}
-
-function bucketByFingerprint(findings) {
-  const buckets = new Map();
-  for (const finding of findings) {
-    if (!finding.fingerprint) continue;
-    const bucket = buckets.get(finding.fingerprint) ?? [];
-    bucket.push(finding);
-    buckets.set(finding.fingerprint, bucket);
-  }
-  for (const bucket of buckets.values()) bucket.sort(byLocationThenId);
-  return buckets;
-}
-
-function regressionForPair(finding, previous) {
-  if (SEVERITY_RANK.get(finding.severity) <= SEVERITY_RANK.get(previous.severity)) return null;
-  return {
-    finding,
-    detail: {
-      id: finding.id,
-      reason: 'severity-escalated',
-      previousSeverity: previous.severity,
-      currentSeverity: finding.severity,
-    },
-  };
-}
-
 export function evaluateRegressionBaseline(baselineReport, currentReport) {
   assertReportShape(baselineReport, 'baseline report');
   assertReportShape(currentReport, 'current report');
@@ -140,64 +108,34 @@ export function evaluateRegressionBaseline(baselineReport, currentReport) {
   }
   assertCompleteBaselineCoverage(baselineReport, baselineEngines);
 
-  const baselineById = new Map(baselineReport.findings.map((finding) => [finding.id, finding]));
-  const matchedBaselineIds = new Set();
-  const matchedCurrentIds = new Set();
-  const classificationById = new Map();
+  const { pairs, unmatchedPrevious, unmatchedCurrent } = matchFindingSets(
+    baselineReport.findings,
+    currentReport.findings,
+  );
+  const unmatchedCurrentSet = new Set(unmatchedCurrent);
+  const regressionFindings = [];
+  const regressionDetails = [];
 
-  // Phase 1: preserve backward compatibility with pre-fingerprint baselines by
-  // accepting an exact occurrence ID match before considering fingerprints.
   for (const finding of currentReport.findings) {
-    const previous = baselineById.get(finding.id);
-    if (!previous || matchedBaselineIds.has(previous.id)) continue;
-    matchedBaselineIds.add(previous.id);
-    matchedCurrentIds.add(finding.id);
-    const regression = regressionForPair(finding, previous);
-    if (regression) classificationById.set(finding.id, regression);
-  }
+    if (unmatchedCurrentSet.has(finding)) {
+      regressionFindings.push(finding);
+      regressionDetails.push({ id: finding.id, reason: 'new' });
+      continue;
+    }
 
-  // Phase 2: line-stable matching for remaining findings. Buckets make the
-  // comparison count-aware so a second identical occurrence cannot hide behind
-  // one accepted baseline occurrence.
-  const remainingBaseline = baselineReport.findings.filter((finding) => !matchedBaselineIds.has(finding.id));
-  const remainingCurrent = currentReport.findings.filter((finding) => !matchedCurrentIds.has(finding.id));
-  const baselineBuckets = bucketByFingerprint(remainingBaseline);
-  const currentBuckets = bucketByFingerprint(remainingCurrent);
-
-  for (const [fingerprint, currentBucket] of currentBuckets) {
-    const baselineBucket = baselineBuckets.get(fingerprint) ?? [];
-    const pairCount = Math.min(currentBucket.length, baselineBucket.length);
-    for (let index = 0; index < pairCount; index += 1) {
-      const finding = currentBucket[index];
-      const previous = baselineBucket[index];
-      matchedBaselineIds.add(previous.id);
-      matchedCurrentIds.add(finding.id);
-      const regression = regressionForPair(finding, previous);
-      if (regression) classificationById.set(finding.id, regression);
+    const previous = pairs.get(finding);
+    if (previous && SEVERITY_RANK.get(finding.severity) > SEVERITY_RANK.get(previous.severity)) {
+      regressionFindings.push(finding);
+      regressionDetails.push({
+        id: finding.id,
+        reason: 'severity-escalated',
+        previousSeverity: previous.severity,
+        currentSeverity: finding.severity,
+      });
     }
   }
 
-  // Anything current that neither matched by exact ID nor fingerprint is new.
-  for (const finding of currentReport.findings) {
-    if (matchedCurrentIds.has(finding.id)) continue;
-    classificationById.set(finding.id, {
-      finding,
-      detail: { id: finding.id, reason: 'new' },
-    });
-  }
-
-  const regressionFindings = [];
-  const regressionDetails = [];
-  for (const finding of currentReport.findings) {
-    const classification = classificationById.get(finding.id);
-    if (!classification) continue;
-    regressionFindings.push(classification.finding);
-    regressionDetails.push(classification.detail);
-  }
-
-  const resolvedFindingIds = baselineReport.findings
-    .filter((finding) => !matchedBaselineIds.has(finding.id))
-    .map((finding) => finding.id);
+  const resolvedFindingIds = unmatchedPrevious.map((finding) => finding.id);
   const severityEscalations = regressionDetails.filter((detail) => detail.reason === 'severity-escalated').length;
 
   return {
