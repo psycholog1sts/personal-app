@@ -25,7 +25,7 @@ export function parseOpengrepJson(raw) {
       path: result?.path ? String(result.path) : null,
       line: Number.isInteger(result?.start?.line) ? result.start.line : null,
       evidence: message,
-      remediation: 'Review the flagged code path, apply the rule-specific secure coding fix, and re-run Guardian verification before release.',
+      remediation: 'Review the flagged code path, apply the rule-specific secure coding fix, and re-run RLSProof verification before release.',
     }));
   }
 
