@@ -7,6 +7,8 @@ export const englishDictionary = {
     privacy: { title: 'Privacy — RLSProof', description: 'Privacy information for RLSProof Quick Scan and paid verification services.' },
     terms: { title: 'Terms — RLSProof', description: 'Terms for authorized use of RLSProof security-development tools and services.' },
     security: { title: 'Security & Verification Model — RLSProof', description: 'How RLSProof handles source, coverage, release decisions, scanner supply chain, database proof, and verification limits.' },
+    about: { title: 'About — RLSProof', description: 'What RLSProof is, how its Supabase authorization evidence workflow works, and the limits of its security claims.' },
+    contact: { title: 'Contact — RLSProof', description: 'Current product, support, and responsible-disclosure contact channels for RLSProof.' },
   },
   nav: {
     homeLabel: 'RLSProof home',
@@ -18,7 +20,7 @@ export const englishDictionary = {
       { id: 'install', label: 'Install', href: '#install' },
       { id: 'pricing', label: 'Pricing', href: '#pricing' },
       { id: 'security', label: 'Security', href: '/security' },
-      { id: 'privacy', label: 'Privacy', href: '/privacy' },
+      { id: 'about', label: 'About', href: '/about' },
     ],
     cta: 'Run free scan',
   },
@@ -225,6 +227,31 @@ export const englishDictionary = {
     repositoryLabel: 'Inspect the public repository',
     returnHome: 'Return to RLSProof',
   },
+  about: {
+    eyebrow: 'About RLSProof',
+    title: 'Authorization evidence designed for release decisions.',
+    intro: 'RLSProof is an independent software product focused on one narrow problem: making Supabase authorization boundaries observable before code ships.',
+    updated: 'Current product model · September 4, 2026',
+    sections: [
+      { id: 'problem', heading: 'The problem it addresses', body: 'Row Level Security can exist and still be wrong for a specific identity, operation, or tenant boundary. RLSProof combines static checks, explicit coverage, and executable authorization proof so teams can see which controls actually ran.' },
+      { id: 'method', heading: 'How the product works', body: 'Quick Scan provides bounded browser-side triage for public GitHub repositories. The GitHub Action runs deterministic native checks and optional pinned external scanners in the repository runner. Database proof is a separate test layer for isolated Supabase/Postgres environments.' },
+      { id: 'commercial', heading: 'Commercial model', body: 'Quick Scan is free. Launch Verification is a human-reviewed service that adds reviewed findings, remediation guidance, and fix → re-test evidence. Payment activation is pending; the site does not claim an active checkout when none is configured.' },
+      { id: 'limits', heading: 'What RLSProof does not claim', body: 'RLSProof is not a security certification, penetration test, compliance attestation, or guarantee that an application is secure. Its value is inspectable engineering evidence with explicit limits.' },
+    ],
+    securityLabel: 'Read the security model',
+    contactLabel: 'Contact RLSProof',
+  },
+  contact: {
+    eyebrow: 'Contact',
+    title: 'Use the channel that matches the question.',
+    intro: 'RLSProof currently uses its public GitHub repository as the documented product contact surface. Do not post credentials, private repository contents, or sensitive vulnerability details in a public issue.',
+    methods: [
+      { id: 'product', heading: 'Product questions and support', body: 'Use GitHub Issues for reproducible product questions, bug reports, and public-repository Quick Scan problems. Include the smallest safe reproduction you can provide.', linkLabel: 'Open GitHub Issues', href: 'https://github.com/psycholog1sts/personal-app/issues/new' },
+      { id: 'security', heading: 'Security reports', body: 'Start from the repository Security page and follow the responsible-disclosure policy. Never paste credentials, tokens, private source, or exploit details into a public issue.', linkLabel: 'Open repository Security', href: 'https://github.com/psycholog1sts/personal-app/security' },
+      { id: 'service', heading: 'Launch Verification', body: 'Current service scope and payment status are published on the pricing section. Payment activation is pending, so no active checkout is represented until a real provider flow is available.', linkLabel: 'View pricing', href: '/#pricing' },
+    ],
+    repositoryLabel: 'Inspect the public repository',
+  },
   legal: {
     privacy: {
       brand: 'RLSProof', title: 'Privacy', updated: 'Last updated: September 4, 2026.',
@@ -252,6 +279,8 @@ export const englishDictionary = {
     tagline: 'Authorization evidence for Supabase teams.',
     disclaimer: 'Security-development aid, not a security certification or compliance attestation.',
     legalLabel: 'Resources and legal',
+    about: 'About',
+    contact: 'Contact',
     security: 'Security',
     privacy: 'Privacy',
     terms: 'Terms',
