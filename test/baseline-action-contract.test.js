@@ -115,3 +115,29 @@ test('baseline rejects duplicate finding ids instead of allowing ambiguous compa
     await rm(dir, { recursive: true, force: true });
   }
 });
+
+test('action report keeps inspectable regression reasons and resolved ids', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'rlsproof-baseline-evidence-'));
+  const baseline = path.join(dir, 'baseline.json');
+  const current = path.join(dir, 'current.json');
+  try {
+    const seed = await runAction(['--target', 'test/fixtures/clean', '--report', baseline]);
+    assert.equal(seed.code, 0, seed.stderr || seed.stdout);
+
+    const result = await runAction([
+      '--target', 'test/fixtures/vulnerable',
+      '--baseline-report', baseline,
+      '--report', current,
+    ]);
+    assert.equal(result.code, 2, result.stderr || result.stdout);
+
+    const report = JSON.parse(await readFile(current, 'utf8'));
+    assert.equal(report.baseline?.mode, 'regression');
+    assert.equal(report.baseline?.regressions > 0, true);
+    assert.equal(Array.isArray(report.baseline?.regressionDetails), true);
+    assert.equal(report.baseline.regressionDetails.every((item) => item.reason === 'new' || item.reason === 'severity-escalated'), true);
+    assert.equal(Array.isArray(report.baseline?.resolvedFindingIds), true);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
