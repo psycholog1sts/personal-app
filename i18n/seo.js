@@ -5,11 +5,18 @@ function normalizeSiteUrl(siteUrl) {
   return typeof siteUrl === 'string' ? siteUrl.replace(/\/+$/, '') : '';
 }
 
+function normalizePublishedPath(pathname) {
+  const raw = typeof pathname === 'string' && pathname.trim() ? pathname.trim() : '/';
+  const withLeadingSlash = raw.startsWith('/') ? raw : `/${raw}`;
+  if (withLeadingSlash === '/') return '/';
+  if (/\.[^/]+$/.test(withLeadingSlash)) return withLeadingSlash;
+  return `${withLeadingSlash.replace(/\/+$/, '')}/`;
+}
+
 export function buildAbsoluteUrl(siteUrl, pathname) {
   const base = normalizeSiteUrl(siteUrl);
   if (!base) return '';
-  const path = pathname === '/' ? '/' : pathname;
-  return `${base}${path}`;
+  return `${base}${normalizePublishedPath(pathname)}`;
 }
 
 export function getAlternateLanguages(pathname, siteUrl) {
