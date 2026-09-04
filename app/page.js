@@ -12,16 +12,26 @@ import SiteHeader from './components/SiteHeader.js';
 import TrustMethodology from './components/TrustMethodology.js';
 import WorkflowTimeline from './components/WorkflowTimeline.js';
 import { getDictionary } from '../i18n/get-dictionary.js';
+import { buildPageMetadata } from '../i18n/seo.js';
 import { buildWebSiteStructuredData, serializeStructuredData } from '../i18n/structured-data.js';
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ?? '';
+const copy = getDictionary('en');
+
+export const metadata = buildPageMetadata({
+  locale: 'en',
+  pathname: '/',
+  title: copy.meta.home.title,
+  description: copy.meta.home.description,
+  siteUrl,
+});
 
 export default function Home() {
   const checkoutUrl = process.env.AUDIT_CHECKOUT_URL ?? '';
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? '';
-  const copy = getDictionary('en');
   const structuredData = buildWebSiteStructuredData(siteUrl, copy.meta.home.description);
 
   return (
-    <main>
+    <>
       {structuredData ? (
         <script
           type="application/ld+json"
@@ -30,35 +40,38 @@ export default function Home() {
       ) : null}
 
       <SiteHeader copy={copy.nav} />
-      <HeroCommandCenter copy={copy.hero} releaseConsoleCopy={copy.releaseConsole} />
 
-      <section className="signalStrip" aria-label={copy.signals.ariaLabel}>
-        <div className="shell signalGrid">
-          {copy.signals.items.map((item) => <div key={item.id}><span>{item.label}</span><strong>{item.value}</strong></div>)}
-        </div>
-      </section>
+      <main id="main-content">
+        <HeroCommandCenter copy={copy.hero} releaseConsoleCopy={copy.releaseConsole} />
 
-      <ProofMatrix copy={copy.proof} />
-      <WorkflowTimeline copy={copy.workflow} />
-      <FindingsExplorer copy={copy.findings} />
+        <section className="signalStrip" aria-label={copy.signals.ariaLabel}>
+          <div className="shell signalGrid">
+            {copy.signals.items.map((item) => <div key={item.id}><span>{item.label}</span><strong>{item.value}</strong></div>)}
+          </div>
+        </section>
 
-      <section className="section shell proofBento" aria-label={copy.a11y.coverageEvidenceExamples}>
-        <CoveragePanel copy={copy.coverage} />
-        <EvidencePanel copy={copy.evidence} />
-      </section>
+        <ProofMatrix copy={copy.proof} />
+        <WorkflowTimeline copy={copy.workflow} />
+        <FindingsExplorer copy={copy.findings} />
 
-      <section className="section shell scannerSection" aria-labelledby="scan-title">
-        <div className="sectionHeading splitHeading">
-          <div><p className="eyebrow">{copy.scannerSection.eyebrow}</p><h2 id="scan-title">{copy.scannerSection.title}</h2></div>
-          <p>{copy.scannerSection.body}</p>
-        </div>
-        <ScannerForm checkoutUrl={checkoutUrl} copy={copy.scanner} />
-      </section>
+        <section className="section shell proofBento" aria-label={copy.a11y.coverageEvidenceExamples}>
+          <CoveragePanel copy={copy.coverage} />
+          <EvidencePanel copy={copy.evidence} />
+        </section>
 
-      <TrustMethodology copy={copy.methodology} />
-      <InstallPanel copy={copy.install} />
-      <PricingSection checkoutUrl={checkoutUrl} copy={copy.pricing} />
-      <FaqSection copy={copy.faq} />
+        <section className="section shell scannerSection" aria-labelledby="scan-title">
+          <div className="sectionHeading splitHeading">
+            <div><p className="eyebrow">{copy.scannerSection.eyebrow}</p><h2 id="scan-title">{copy.scannerSection.title}</h2></div>
+            <p>{copy.scannerSection.body}</p>
+          </div>
+          <ScannerForm checkoutUrl={checkoutUrl} copy={copy.scanner} />
+        </section>
+
+        <TrustMethodology copy={copy.methodology} />
+        <InstallPanel copy={copy.install} />
+        <PricingSection checkoutUrl={checkoutUrl} copy={copy.pricing} />
+        <FaqSection copy={copy.faq} />
+      </main>
 
       <footer className="footer shell">
         <div><strong>RLSProof</strong><span>{copy.footer.tagline}</span></div>
@@ -70,6 +83,6 @@ export default function Home() {
           <a href="https://github.com/psycholog1sts/personal-app" rel="noreferrer">{copy.footer.repository}</a>
         </nav>
       </footer>
-    </main>
+    </>
   );
 }
