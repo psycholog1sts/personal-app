@@ -34,15 +34,10 @@ jobs:
         env:
           NEXT_PUBLIC_SITE_URL: https://psycholog1sts.github.io/personal-app
         run: npm run build
-      - name: Verify static export
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -f out/index.html
-          test -f out/privacy/index.html
-          test -f out/terms/index.html
-          test -f out/robots.txt
-          test -f out/sitemap.xml
+      - name: Verify static publication
+        env:
+          NEXT_PUBLIC_SITE_URL: https://psycholog1sts.github.io/personal-app
+        run: npm run verify:site
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         with:
