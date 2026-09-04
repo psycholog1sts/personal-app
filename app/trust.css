@@ -1,0 +1,97 @@
+.securityPage,
+.notFoundPage {
+  width: min(900px, calc(100% - 56px));
+  padding: 88px 0 120px;
+}
+
+.securityPage h1,
+.notFoundPage h1 {
+  max-width: 800px;
+  margin: 0;
+  font-size: clamp(2.75rem, 6vw, 4.8rem);
+  line-height: .98;
+  letter-spacing: -.052em;
+  text-wrap: balance;
+}
+
+.securityIntro {
+  max-width: 760px;
+  margin: 28px 0 16px;
+  color: var(--text-secondary);
+  font-size: 1.08rem;
+  line-height: 1.75;
+}
+
+.securityPage > p:not(.eyebrow):not(.securityIntro),
+.notFoundPage > p {
+  color: var(--text-tertiary);
+}
+
+.securityPage section {
+  margin-top: 46px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border);
+}
+
+.securityPage section h2 {
+  max-width: 720px;
+  margin: 0 0 12px;
+  font-size: clamp(1.35rem, 2.8vw, 1.9rem);
+  line-height: 1.18;
+  letter-spacing: -.025em;
+}
+
+.securityPage section p {
+  max-width: 760px;
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.78;
+}
+
+.securityLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  margin-top: 52px;
+  padding-top: 26px;
+  border-top: 1px solid var(--border);
+}
+
+.securityLinks a,
+.notFoundPage a {
+  color: var(--success);
+  font-weight: 780;
+}
+
+.notFoundPage {
+  min-height: 72vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.notFoundPage h1 {
+  font-size: clamp(3rem, 8vw, 5.5rem);
+}
+
+.notFoundPage > p {
+  max-width: 620px;
+  font-size: 1rem;
+}
+
+@media (max-width: 720px) {
+  .securityPage,
+  .notFoundPage {
+    width: min(100% - 36px, 900px);
+    padding: 64px 0 88px;
+  }
+
+  .securityPage h1 {
+    font-size: clamp(2.45rem, 12vw, 3.3rem);
+  }
+
+  .securityPage section {
+    margin-top: 36px;
+    padding-top: 24px;
+  }
+}
