@@ -1,15 +1,14 @@
 export const englishDictionary = {
   meta: {
     home: {
-      title: 'RLSProof — Supabase Authorization Release Gate',
-      description: 'Continuous Supabase authorization release gate for AI-built apps: test RLS and tenant isolation, expose coverage, block regressions, and re-test fixes before release.',
+      title: 'RLSProof — Supabase RLS & Tenant Isolation Checks',
+      description: 'Test Supabase RLS and tenant isolation, make coverage explicit, block authorization regressions, and keep reproducible release evidence before deploy.',
     },
     privacy: { title: 'Privacy — RLSProof', description: 'Privacy information for RLSProof Quick Scan and paid verification services.' },
     terms: { title: 'Terms — RLSProof', description: 'Terms for authorized use of RLSProof security-development tools and services.' },
   },
   nav: {
     homeLabel: 'RLSProof home',
-    workingName: 'working name',
     primaryLabel: 'Primary navigation',
     items: [
       { id: 'proof', label: 'Proof', href: '#proof' },
@@ -22,11 +21,11 @@ export const englishDictionary = {
     cta: 'Run free scan',
   },
   hero: {
-    eyebrow: 'Supabase authorization release control',
-    title: 'Can User B access User A’s data?',
-    body: 'Prove the boundary before it ships. Run a deterministic release gate on every pull request and every deploy, catch policy drift, expose what actually executed, then fix and re-test the same authorization proof.',
-    primaryCta: 'Run free repo scan',
-    secondaryCta: 'Inspect sample proof',
+    eyebrow: 'Supabase authorization release gate',
+    title: 'Prove your Supabase data boundaries before release.',
+    body: 'Can User B access User A’s data? RLSProof checks authorization risks, exposes what actually ran, and gives teams repeatable evidence before merging or deploying.',
+    primaryCta: 'Run a free Quick Scan',
+    secondaryCta: 'See example release evidence',
     disclaimer: 'Security-development evidence, not a security certification.',
     trustLabel: 'Product trust properties',
     trustItems: [
@@ -86,7 +85,7 @@ export const englishDictionary = {
   workflow: {
     eyebrow: 'Continuous by default',
     title: 'Security runs when the application changes.',
-    body: 'The website is the control surface. Retention comes from a gate already attached to the engineering lifecycle.',
+    body: 'Attach the same authorization evidence to pull requests and deploys so policy drift and boundary regressions are visible before release.',
     timelineLabel: 'Release proof workflow',
     triggers: [
       { id: 'pr', title: 'Every pull request', body: 'Review code and SQL changes before merge.' },
@@ -138,9 +137,9 @@ export const englishDictionary = {
     labels: { commit: 'Commit', scope: 'Scope', staticEngines: 'Static engines', dbProof: 'DB proof', verification: 'Verification' },
   },
   scannerSection: {
-    eyebrow: 'Live acquisition surface',
-    title: 'Check a public repo now. Treat the result as bounded.',
-    body: 'The free browser scan is useful triage, not the full release gate. External engines and runtime authorization proof require the CI workflow.',
+    eyebrow: 'Free browser Quick Scan',
+    title: 'Check a public repository without uploading it to an RLSProof backend.',
+    body: 'The bounded browser scan is useful triage, not the full release gate. External engines and runtime authorization proof require the CI workflow.',
   },
   scanner: {
     ariaLabel: 'Free repository scanner',
@@ -162,10 +161,10 @@ export const englishDictionary = {
     repositoryFallback: 'repository',
     fixLabel: 'Fix:',
     upsellKicker: 'Need evidence before launch?',
-    upsellTitle: 'Full Launch Audit — $149',
-    upsellBody: 'Gitleaks + OSV-Scanner + Opengrep, reviewed findings, and a verification report.',
-    buyAudit: 'Buy full audit',
-    checkoutPending: 'Checkout being configured',
+    upsellTitle: 'Launch Verification — $149',
+    upsellBody: 'Full scanner coverage, reviewed findings, and a fix → re-test evidence report.',
+    buyAudit: 'Buy launch verification',
+    checkoutPending: 'Payment activation pending',
   },
   methodology: {
     eyebrow: 'Trust through inspectability',
@@ -190,16 +189,16 @@ export const englishDictionary = {
     safetyBody: 'never run destructive authorization fixtures against a production database. Use an isolated test stack and review generated tests before execution.',
   },
   pricing: {
-    eyebrow: 'Pricing hypotheses',
-    title: 'Free finds risk. Paid keeps proving the boundary.',
-    body: 'Recurring and service pricing remain validation hypotheses until real buyers confirm willingness to pay.',
-    quickScan: { badge: 'Acquisition', name: 'Quick Scan', price: '$0', body: 'Bounded public-repository checks with Supabase-focused evidence. No account required.', items: ['Public repositories', 'Browser-side analysis', 'Partial coverage disclosed'], cta: 'Scan a repository' },
-    continuous: { badge: 'Recurring proof', name: 'Continuous Guard', price: 'Private beta', body: 'Private-repository release gates, DB proof, drift visibility and regression history.', items: ['Every pull request', 'Every deploy', 'Required DB proof modes'], cta: 'Beta pricing being validated' },
-    launch: { badge: 'Human-reviewed service', name: 'Launch Verification', price: '$149', priceNote: 'validation price', body: 'Full scanner coverage, reviewed findings and a fix → re-test evidence report before launch.', items: ['Pinned external engines', 'Reviewed remediation', 'Verification report'], buy: 'Buy launch verification', pending: 'Payment activation pending' },
+    eyebrow: 'Plans for every release stage',
+    title: 'Start free. Add reviewed evidence when the release needs it.',
+    body: 'Quick Scan is free. Launch Verification adds a human-reviewed remediation and re-test report. Continuous Guard remains private beta while the recurring workflow is validated.',
+    quickScan: { badge: 'Free', name: 'Quick Scan', price: '$0', body: 'Bounded public-repository checks with Supabase-focused evidence. No account required.', items: ['Public repositories', 'Browser-side analysis', 'Partial coverage disclosed'], cta: 'Scan a repository' },
+    continuous: { badge: 'Private beta', name: 'Continuous Guard', price: 'Private beta', body: 'Private-repository release gates, DB proof, drift visibility and regression history.', items: ['Every pull request', 'Every deploy', 'Required DB proof modes'], cta: 'Join private beta' },
+    launch: { badge: 'Human-reviewed service', name: 'Launch Verification', price: '$149', priceNote: 'current launch price', body: 'Full scanner coverage, reviewed findings and a fix → re-test evidence report before launch.', items: ['Pinned external engines', 'Reviewed remediation', 'Verification report'], buy: 'Buy launch verification', pending: 'Payment activation pending' },
   },
   faq: {
     eyebrow: 'Technical FAQ',
-    title: 'The objections a security gate should answer directly.',
+    title: 'The questions a security gate should answer directly.',
     items: [
       { id: 'ai', question: 'Does AI decide whether a release is safe?', answer: 'No. AI can help explain findings or draft remediation. Release states come from deterministic checks, observed authorization tests and explicit coverage.' },
       { id: 'source', question: 'Does my repository source get uploaded?', answer: 'The public Quick Scan runs in the browser. The full action runs in your GitHub runner. The product direction avoids requiring source upload to a hosted scanner backend.' },
@@ -232,7 +231,7 @@ export const englishDictionary = {
     },
   },
   footer: {
-    workingName: 'Temporary working name · final brand and domain TBD.',
+    tagline: 'Authorization evidence for Supabase teams.',
     disclaimer: 'Security-development aid, not a security certification or compliance attestation.',
     legalLabel: 'Legal',
     privacy: 'Privacy',
