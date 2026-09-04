@@ -92,14 +92,15 @@ test('fingerprint matching is count-aware so an added duplicate occurrence is st
   assert.equal(result.resolvedFindings, 0);
 });
 
-test('legacy baseline reports without fingerprints retain id-based compatibility', () => {
+test('legacy baseline reports without fingerprints match a new fingerprinted scan by exact id', () => {
   const baseline = report([finding('legacy', 'medium')]);
-  const current = report([finding('legacy', 'medium', { line: 99 })]);
+  const current = report([finding('legacy', 'medium', { fingerprint: 'gfp_new_format' })]);
 
   const result = evaluateRegressionBaseline(baseline, current);
 
   assert.equal(result.regressions, 0);
   assert.equal(result.resolvedFindings, 0);
+  assert.equal(result.acceptedExistingFindings, 1);
 });
 
 test('baseline evaluator rejects verification reports and resolved historical findings', () => {
