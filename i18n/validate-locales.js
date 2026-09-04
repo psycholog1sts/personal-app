@@ -79,3 +79,45 @@ export function validateDictionary(source, candidate) {
   walk(source, candidate, '', errors);
   return { ok: errors.length === 0, errors };
 }
+
+export function validateLocaleRegistry(registry, defaultLocale) {
+  const errors = [];
+  if (!Array.isArray(registry) || registry.length === 0) {
+    return { ok: false, errors: ['registry: must contain at least one locale'] };
+  }
+
+  const requiredFields = ['code', 'slug', 'status', 'htmlLang', 'ogLocale', 'label', 'dir'];
+  const codes = new Set();
+  const slugs = new Set();
+
+  registry.forEach((locale, index) => {
+    const path = `registry[${index}]`;
+    for (const field of requiredFields) {
+      if (typeof locale?.[field] !== 'string') {
+        errors.push(`${path}.${field}: must be a string`);
+      } else if (field !== 'slug' && locale[field].trim().length === 0) {
+        errors.push(`${path}.${field}: must not be empty`);
+      }
+    }
+
+    if (!['published', 'draft'].includes(locale?.status)) errors.push(`${path}.status: must be published or draft`);
+    if (!['ltr', 'rtl'].includes(locale?.dir)) errors.push(`${path}.dir: must be ltr or rtl`);
+
+    if (typeof locale?.code === 'string') {
+      if (codes.has(locale.code)) errors.push(`${path}.code: duplicate locale code ${locale.code}`);
+      codes.add(locale.code);
+    }
+    if (typeof locale?.slug === 'string') {
+      if (slugs.has(locale.slug)) errors.push(`${path}.slug: duplicate locale slug ${locale.slug}`);
+      slugs.add(locale.slug);
+      if (locale.code !== defaultLocale && locale.slug.trim().length === 0) errors.push(`${path}.slug: non-default locale requires a URL slug`);
+    }
+  });
+
+  const sourceLocale = registry.find((locale) => locale.code === defaultLocale);
+  if (!sourceLocale) errors.push(`registry: default locale ${defaultLocale} is missing`);
+  else if (sourceLocale.status !== 'published') errors.push(`registry: default locale ${defaultLocale} must be published`);
+  else if (sourceLocale.slug !== '') errors.push(`registry: default locale ${defaultLocale} must use the root URL with an empty slug`);
+
+  return { ok: errors.length === 0, errors };
+}
