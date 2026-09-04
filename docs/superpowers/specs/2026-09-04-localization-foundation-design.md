@@ -1,6 +1,6 @@
 # Localization Foundation Design
 
-Status: approved direction in chat; written design pending owner review before implementation.
+Status: implemented on PR #13. English is the only published locale; Japanese, German, and Brazilian Portuguese remain registered drafts. PR-head verification covers tests, production static export, action-contract, and external scanner integration.
 
 ## Goal
 
@@ -48,9 +48,9 @@ Only `status: published` locales may participate in route generation, sitemap ou
 
 The site remains a static export hosted by GitHub Pages.
 
-To ensure the `<html lang>` attribute is correct for every language, the implementation will use multiple App Router root-layout branches rather than a single hard-coded top-level `app/layout.js`.
+To ensure the `<html lang>` attribute is correct for every language, the implementation will use multiple App Router root-layout branches once the first non-English locale is actually publishable. The current English-only production surface keeps the existing root layout and derives its `lang`/`dir` values from the locale registry. No empty dynamic locale route is introduced merely for future use.
 
-Planned shape:
+Future shape when the first non-English locale is published:
 
 ```text
 app/
@@ -88,7 +88,7 @@ A published Japanese locale would become:
 
 The dynamic locale branch must export `generateStaticParams()` using only published non-source locales and must reject unspecified locale segments with `dynamicParams = false`. This preserves compatibility with static export and prevents unknown locale URLs from being generated on demand.
 
-If the build proves that an empty non-source locale parameter set is not stable under the repository's exact Next.js configuration, the localized route branch will be created only when the first non-English locale is published. The content registry, validator, link helpers, metadata model, and CI gates are still implemented now. No workaround may leave an incorrect `html lang` value on future localized pages.
+The localized route branch is intentionally deferred until the first non-English dictionary has completed content, terminology, legal/commercial, SEO, build, and responsive QA. The content registry, validator, link helpers, metadata model, and CI gates are implemented now. No workaround may leave an incorrect `html lang` value on future localized pages.
 
 ## Canonical content model
 
@@ -318,7 +318,7 @@ No client-side live exchange-rate conversion is introduced by the localization f
 
 No new paid service is required.
 
-The existing Node test workflow will gain localization coverage. Required tests include:
+The existing Node test workflow gains localization coverage. Required tests include:
 
 1. Source dictionary validation passes.
 2. Published locale registry contains English and no accidental draft locale.
@@ -333,13 +333,13 @@ The existing Node test workflow will gain localization coverage. Required tests 
 11. Production `next build` and static export remain green.
 12. Existing scanner, action-contract, DB-proof, external-integration, and product-surface tests remain green.
 
-A dedicated command will also be available for local/CI checks, conceptually:
+A dedicated command is available for local/CI checks:
 
 ```text
 npm run i18n:check
 ```
 
-The exact script will call the repository-owned validator and require no localization vendor.
+The script calls the repository-owned validator and requires no localization vendor.
 
 ## Publication workflow for a future locale
 
@@ -362,8 +362,8 @@ The registry status change is the publication switch. There is no hidden environ
 
 - No runtime translation API.
 - No paid localization service.
-- Prefer no new runtime dependency; repository-owned locale utilities are sufficient for the current site size.
-- Dictionaries are statically imported/build-time resolved where possible.
+- No new runtime localization dependency in the current implementation; repository-owned locale utilities are sufficient for the current site size.
+- Dictionaries are statically imported/build-time resolved.
 - No locale bundle for an unpublished language is shipped to users.
 - No automatic locale-detection JavaScript is added.
 - Existing static-first rendering strategy remains intact.
