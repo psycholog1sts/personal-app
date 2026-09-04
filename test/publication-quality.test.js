@@ -37,7 +37,8 @@ test('homepage owns its metadata and keeps global landmarks in semantic order', 
 test('mobile navigation remains available without client-side JavaScript', async () => {
   const header = await read('app/components/SiteHeader.js');
   assert.match(header, /<details className="mobileNav">/);
-  assert.match(header, /<summary[^>]*>\{copy\.menuLabel\}<\/summary>/);
+  assert.match(header, /<summary aria-label=\{copy\.primaryLabel\}>Menu<\/summary>/);
+  assert.match(header, /className="mobileNavCta"/);
   assert.doesNotMatch(header, /['"]use client['"]/);
 });
 
