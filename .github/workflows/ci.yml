@@ -38,6 +38,44 @@ jobs:
           test -f out/robots.txt
           test -f out/sitemap.xml
 
+  action-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Composite action allows clean fixture
+        id: clean
+        uses: ./
+        with:
+          target: test/fixtures/clean
+          report-path: rlsproof-clean-report.json
+      - name: Assert clean fixture is not blocked
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ steps.clean.outputs.release-gate }}" = "blocked" ]; then
+            echo "Clean fixture must not be blocked"
+            exit 1
+          fi
+          test -f rlsproof-clean-report.json
+      - name: Composite action blocks vulnerable fixture
+        id: vulnerable
+        continue-on-error: true
+        uses: ./
+        with:
+          target: test/fixtures/vulnerable
+          report-path: rlsproof-vulnerable-report.json
+      - name: Assert vulnerable fixture fails the release gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ steps.vulnerable.outcome }}" != "failure" ]; then
+            echo "Vulnerable fixture must fail the composite action"
+            exit 1
+          fi
+          test -f rlsproof-vulnerable-report.json
+
   external-integration:
     runs-on: ubuntu-latest
     timeout-minutes: 15
