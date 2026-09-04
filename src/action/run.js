@@ -4,20 +4,23 @@ import { appendFile } from 'node:fs/promises';
 import { scanProject } from '../scan.js';
 import { writeReport } from '../report.js';
 import { redactEvidence } from '../core/redact.js';
+import { combineReleaseGate, evaluateDbProof } from './db-proof.js';
 
 function parseArgs(argv) {
   const options = {
     target: process.env.RLSPROOF_TARGET || '.',
     reportPath: process.env.RLSPROOF_REPORT_PATH || 'rlsproof-report.json',
+    dbProofMode: process.env.RLSPROOF_DB_PROOF || 'off',
   };
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
-    if (arg === '--target' || arg === '--report') {
+    if (arg === '--target' || arg === '--report' || arg === '--db-proof') {
       const value = argv[index + 1];
       if (!value || value.startsWith('--')) throw new Error(`${arg} requires a value`);
       if (arg === '--target') options.target = value;
-      else options.reportPath = value;
+      else if (arg === '--report') options.reportPath = value;
+      else options.dbProofMode = value;
       index += 1;
       continue;
     }
@@ -39,6 +42,7 @@ function summaryMarkdown(report, reportPath) {
   const high = Array.isArray(report.findings)
     ? report.findings.filter((finding) => finding.severity === 'high' || finding.severity === 'critical').length
     : 0;
+  const dbProof = String(report.proof?.database?.status ?? 'off').toUpperCase();
 
   return [
     '## RLSProof release gate',
@@ -47,11 +51,14 @@ function summaryMarkdown(report, reportPath) {
     `- **Readiness score:** ${score}/100`,
     `- **Findings:** ${findings}`,
     `- **High/Critical:** ${high}`,
+    `- **Database proof:** ${dbProof}`,
     `- **Report:** \`${reportPath}\``,
     '',
-    report.coverage?.complete === true
-      ? 'Requested coverage completed.'
-      : 'Coverage is intentionally bounded in the default GitHub Action. Treat this as a deterministic release signal, not a penetration test.',
+    report.proof?.database?.mode !== 'off' && report.proof?.database?.complete !== true
+      ? 'Database proof coverage is incomplete. A skipped or unavailable DB proof is never represented as PASS.'
+      : report.coverage?.complete === true
+        ? 'Requested coverage completed.'
+        : 'Coverage is intentionally bounded in the default GitHub Action. Treat this as a deterministic release signal, not a penetration test.',
     '',
   ].join('\n');
 }
@@ -65,20 +72,31 @@ async function writeOutputs(report, reportPath) {
     `score=${report.readiness?.score ?? ''}`,
     `findings=${findings}`,
     `report-path=${reportPath}`,
+    `db-proof=${report.proof?.database?.status ?? 'off'}`,
     '',
   ].join('\n'));
 }
 
 export async function runAction(argv = process.argv.slice(2)) {
-  const { target, reportPath } = parseArgs(argv);
-  const report = await scanProject(target, { nativeOnly: true });
+  const { target, reportPath, dbProofMode } = parseArgs(argv);
+  const staticReport = await scanProject(target, { nativeOnly: true });
+  const databaseProof = await evaluateDbProof({ mode: dbProofMode, target });
+  const report = {
+    ...staticReport,
+    releaseGate: combineReleaseGate(staticReport.releaseGate, databaseProof),
+    proof: {
+      ...(staticReport.proof ?? {}),
+      database: databaseProof,
+    },
+  };
+
   await writeReport(report, reportPath);
   await writeOutputs(report, reportPath);
   await appendGithubFile(process.env.GITHUB_STEP_SUMMARY, summaryMarkdown(report, reportPath));
 
   const gate = String(report.releaseGate ?? 'unknown');
   const score = report.readiness?.score ?? 'n/a';
-  process.stdout.write(`RLSProof release gate: ${gate} (${score}/100)\n`);
+  process.stdout.write(`RLSProof release gate: ${gate} (${score}/100), db-proof=${databaseProof.status}\n`);
 
   return {
     report,
