@@ -17,18 +17,37 @@ async function readOrEmpty(relativePath) {
   }
 }
 
+async function readSurface() {
+  const paths = [
+    'app/page.js',
+    'app/components/HeroCommandCenter.js',
+    'app/components/ReleaseConsole.js',
+    'app/components/ProofMatrix.js',
+    'app/components/WorkflowTimeline.js',
+    'app/components/FindingsExplorer.js',
+    'app/components/CoveragePanel.js',
+    'app/components/EvidencePanel.js',
+    'app/components/InstallPanel.js',
+    'app/components/TrustMethodology.js',
+    'app/components/PricingSection.js',
+    'app/components/FaqSection.js',
+  ];
+
+  return (await Promise.all(paths.map(readOrEmpty))).join('\n');
+}
+
 test('product surface explains recurring release-proof value instead of a one-off scanner', async () => {
-  const page = await read('app/page.js');
+  const surface = await readSurface();
   const css = await read('app/globals.css');
 
-  assert.match(page, /Can User B access User A['’]s data\?/i);
-  assert.match(page, /every pull request/i);
-  assert.match(page, /every deploy/i);
-  assert.match(page, /tenant isolation/i);
-  assert.match(page, /re-?test/i);
-  assert.match(page, /policy drift/i);
-  assert.match(page, /sample proof/i);
-  assert.match(page, /not a security certification/i);
+  assert.match(surface, /Can User B access User A['’]s data\?/i);
+  assert.match(surface, /every pull request/i);
+  assert.match(surface, /every deploy/i);
+  assert.match(surface, /tenant isolation/i);
+  assert.match(surface, /re-?test/i);
+  assert.match(surface, /policy drift/i);
+  assert.match(surface, /sample proof/i);
+  assert.match(surface, /not a security certification/i);
 
   assert.match(css, /proofMatrix/);
   assert.match(css, /workflowGrid/);
