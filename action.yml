@@ -1,0 +1,54 @@
+name: RLSProof Release Gate
+description: Deterministic Supabase-focused release gate for pull requests and deploys.
+author: RLSProof
+
+inputs:
+  target:
+    description: Repository directory to scan.
+    required: false
+    default: .
+  report-path:
+    description: Path for the normalized JSON report.
+    required: false
+    default: rlsproof-report.json
+  db-proof:
+    description: "Supabase database proof mode: off, auto, or required."
+    required: false
+    default: off
+
+outputs:
+  release-gate:
+    description: "Release gate state: blocked, review, incomplete, or clear."
+    value: ${{ steps.gate.outputs.release-gate }}
+  score:
+    description: Readiness score from 0 to 100.
+    value: ${{ steps.gate.outputs.score }}
+  findings:
+    description: Number of normalized findings.
+    value: ${{ steps.gate.outputs.findings }}
+  report-path:
+    description: Path to the generated JSON report.
+    value: ${{ steps.gate.outputs.report-path }}
+  db-proof:
+    description: Supabase DB proof status for this run.
+    value: ${{ steps.gate.outputs.db-proof }}
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Node 22
+      uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: '22'
+    - name: Run RLSProof release gate
+      id: gate
+      shell: bash
+      env:
+        RLSPROOF_TARGET: ${{ inputs.target }}
+        RLSPROOF_REPORT_PATH: ${{ inputs.report-path }}
+        RLSPROOF_DB_PROOF: ${{ inputs.db-proof }}
+      run: node "$GITHUB_ACTION_PATH/src/action/run.js"
+
+branding:
+  icon: shield
+  color: green
