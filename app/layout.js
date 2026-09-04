@@ -1,4 +1,5 @@
 import './globals.css';
+import './professional.css';
 import { getLocale } from '../i18n/config.js';
 import { getDictionary } from '../i18n/get-dictionary.js';
 import { buildPageMetadata } from '../i18n/seo.js';
