@@ -41,7 +41,7 @@ test('OSV treats vulnerability exit status as a completed scan and preserves fin
   assert.ok(result.findings.some((finding) => finding.engine === 'osv-scanner'));
 });
 
-test('Guardian source self-scan has complete external coverage and no high/critical findings', { skip: !enabled }, async () => {
+test('RLSProof source self-scan has complete external coverage and no high/critical findings', { skip: !enabled }, async () => {
   const report = await scanProject(srcRoot, { nativeOnly: false, opengrepConfig });
   assertExternalCoverage(report);
   const blocking = report.findings.filter((finding) => ['critical', 'high'].includes(finding.severity));
