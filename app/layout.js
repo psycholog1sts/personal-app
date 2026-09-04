@@ -4,6 +4,14 @@ import './trust.css';
 import { getLocale } from '../i18n/config.js';
 
 const locale = getLocale('en');
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '') ?? '';
+
+export const metadata = {
+  ...(siteUrl ? { metadataBase: new URL(`${siteUrl}/`) } : {}),
+  icons: {
+    icon: siteUrl ? `${siteUrl}/icon.svg` : '/icon.svg',
+  },
+};
 
 export default function RootLayout({ children }) {
   return (
