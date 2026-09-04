@@ -94,3 +94,10 @@ test('premium command center exposes explicit proof coverage, install, trust and
   assert.match(trust, /not a security certification/i);
   assert.match(faq, /production database/i);
 });
+
+test('mobile bento panels contain horizontally scrollable evidence instead of widening the page', async () => {
+  const css = await read('app/globals.css');
+
+  assert.match(css, /\.bentoPanel\s*\{[^}]*min-width:\s*0;/s);
+  assert.match(css, /\.coverageLedger\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*100%;/s);
+});
