@@ -120,11 +120,11 @@ test('SEO publication helpers expose only published locales and preserve GitHub 
   const siteUrl = 'https://psycholog1sts.github.io/personal-app';
   const alternates = getAlternateLanguages('/privacy', siteUrl);
   assert.deepEqual(alternates, {
-    en: 'https://psycholog1sts.github.io/personal-app/privacy',
-    'x-default': 'https://psycholog1sts.github.io/personal-app/privacy',
+    en: 'https://psycholog1sts.github.io/personal-app/privacy/',
+    'x-default': 'https://psycholog1sts.github.io/personal-app/privacy/',
   });
   assert.equal(Object.values(alternates).some((url) => url.includes('/ja/')), false);
-  assert.deepEqual(getPublishedLocalizedUrls('/privacy', siteUrl), ['https://psycholog1sts.github.io/personal-app/privacy']);
+  assert.deepEqual(getPublishedLocalizedUrls('/privacy', siteUrl), ['https://psycholog1sts.github.io/personal-app/privacy/']);
 
   const metadata = buildPageMetadata({
     locale: 'en',
@@ -133,9 +133,9 @@ test('SEO publication helpers expose only published locales and preserve GitHub 
     description: 'Privacy information.',
     siteUrl,
   });
-  assert.equal(metadata.alternates.canonical, 'https://psycholog1sts.github.io/personal-app/privacy');
+  assert.equal(metadata.alternates.canonical, 'https://psycholog1sts.github.io/personal-app/privacy/');
   assert.equal(metadata.openGraph.locale, 'en_US');
-  assert.equal(metadata.openGraph.url, 'https://psycholog1sts.github.io/personal-app/privacy');
+  assert.equal(metadata.openGraph.url, 'https://psycholog1sts.github.io/personal-app/privacy/');
 });
 
 test('package scripts enforce locale validation before production builds', async () => {
