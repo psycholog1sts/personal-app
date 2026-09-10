@@ -38,13 +38,14 @@ function assertPage({ name, html, canonical, expectSocial = true }) {
   assert.ok(icons.includes(`${siteUrl}/icon.svg`), `${name} needs the base-path-safe favicon`);
 }
 
-const [home, security, about, contact, privacy, terms, notFound, sitemap, securityTxt] = await Promise.all([
+const [home, security, about, contact, privacy, terms, refund, notFound, sitemap, securityTxt] = await Promise.all([
   read('index.html'),
   read('security/index.html'),
   read('about/index.html'),
   read('contact/index.html'),
   read('privacy/index.html'),
   read('terms/index.html'),
+  read('refund/index.html'),
   read('404.html'),
   read('sitemap.xml'),
   read('.well-known/security.txt'),
@@ -56,6 +57,8 @@ assertPage({ name: 'about', html: about, canonical: `${siteUrl}/about/` });
 assertPage({ name: 'contact', html: contact, canonical: `${siteUrl}/contact/` });
 assertPage({ name: 'privacy', html: privacy, canonical: `${siteUrl}/privacy/` });
 assertPage({ name: 'terms', html: terms, canonical: `${siteUrl}/terms/` });
+
+assertPage({ name: 'refund', html: refund, canonical: `${siteUrl}/refund/` });
 
 assertNoLocalhost('404', notFound);
 assert.doesNotMatch(notFound, /rel="canonical"/i, '404 must not publish a canonical URL');
@@ -82,7 +85,37 @@ assert.deepEqual(sitemapUrls, [
   `${siteUrl}/about/`,
   `${siteUrl}/contact/`,
   `${siteUrl}/privacy/`,
+  `${siteUrl}/refund/`,
   `${siteUrl}/terms/`,
 ]);
+
+// Inspect rendered content, excluding hydration payloads and scripts.
+const visible = (html) => html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
+const basePath = new URL(siteUrl).pathname.replace(/\/$/, '');
+for (const [name, raw] of Object.entries({ home, terms, privacy, refund, contact })) {
+  const html = visible(raw);
+  for (const route of ['terms', 'privacy', 'refund', 'contact']) {
+    assert.ok(html.includes(`href="${basePath}/${route}/"`), `${name} must link to ${route}`);
+  }
+  assert.match(html, /href="mailto:cmetehan161@gmail\.com"/, `${name} needs the authorized contact address`);
+  assert.doesNotMatch(html, /RLSProof\s+(?:Inc\.?|LLC|Ltd\.?|Corporation)|registered company|company registration|VAT number|Paddle[- ]approved|Paddle[- ]verified|official Paddle partner/i, `${name} must not fabricate business or approval claims`);
+}
+for (const [name, html] of Object.entries({ terms, privacy, refund })) {
+  assert.match(visible(html), /independent software product operated by an individual under the RLSProof brand/, `${name} must identify the actual operator model`);
+}
+for (const [name, html] of Object.entries({ home, terms, refund })) {
+  const content = visible(html);
+  assert.match(content, /Launch Verification/);
+  assert.match(content, /\$149/);
+  assert.match(content, /USD/);
+  assert.match(content, /one-time payment/);
+  assert.match(content, /Payment activation pending|Payment activation is pending/);
+  assert.doesNotMatch(content, /href="[^" ]*(?:checkout\.paddle|buy\.paddle|buy\.stripe)/i);
+  const paidPrices = [...content.matchAll(/\$(\d+(?:\.\d{2})?)/g)].map((match) => Number(match[1])).filter(Boolean);
+  assert.ok(paidPrices.length > 0 && paidPrices.every((price) => price === 149), `${name} paid price must remain $149`);
+}
+assert.match(visible(home), /aria-disabled="true"[^>]*>Payment activation pending/);
+assert.match(visible(refund), /href="https:\/\/www\.paddle\.com\/legal\/refund-policy"/);
+assert.match(visible(refund), /mandatory rights/);
 
 console.log(`Static publication verification passed for ${siteUrl}`);

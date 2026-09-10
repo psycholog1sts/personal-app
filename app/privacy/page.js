@@ -31,7 +31,7 @@ export default function PrivacyPage() {
             <p>{section.body}</p>
           </section>
         ))}
-        <p><Link href="/contact">Contact</Link></p>
+        <p><Link href="/contact">Contact</Link> · <Link href="/refund">Refund Policy</Link></p>
       </main>
       <SiteFooter copy={dictionary.footer} />
     </>

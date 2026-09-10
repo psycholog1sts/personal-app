@@ -11,9 +11,11 @@ export default function SiteFooter({ copy }) {
       <nav aria-label={copy.legalLabel}>
         <Link href="/about">{copy.about}</Link>
         <Link href="/contact">{copy.contact}</Link>
+        <a href="mailto:cmetehan161@gmail.com">Email support</a>
         <Link href="/security">{copy.security}</Link>
         <Link href="/privacy">{copy.privacy}</Link>
         <Link href="/terms">{copy.terms}</Link>
+        <Link href="/refund">Refund Policy</Link>
         <a href="https://github.com/psycholog1sts/personal-app" rel="noreferrer">{copy.repository}</a>
       </nav>
     </footer>
