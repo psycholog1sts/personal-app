@@ -198,7 +198,7 @@ export const englishDictionary = {
     body: 'Quick Scan is free. Launch Verification adds a human-reviewed remediation and re-test report. Continuous Guard remains private beta while the recurring workflow is validated.',
     quickScan: { badge: 'Free', name: 'Quick Scan', price: '$0', body: 'Bounded public-repository checks with Supabase-focused evidence. No account required.', items: ['Public repositories', 'Browser-side analysis', 'Partial coverage disclosed'], cta: 'Scan a repository' },
     continuous: { badge: 'Private beta', name: 'Continuous Guard', price: 'Private beta', body: 'Private-repository release gates, DB proof, drift visibility and regression history.', items: ['Every pull request', 'Every deploy', 'Required DB proof modes'], cta: 'Join private beta' },
-    launch: { badge: 'Human-reviewed service', name: 'Launch Verification', price: '$149', priceNote: 'current launch price', body: 'Full scanner coverage, reviewed findings and a fix → re-test evidence report before launch.', items: ['Pinned external engines', 'Reviewed remediation', 'Verification report'], buy: 'Buy launch verification', pending: 'Payment activation pending' },
+    launch: { badge: 'Human-reviewed service', name: 'Launch Verification', price: '$149', priceNote: 'USD · one-time payment', body: 'Full scanner coverage, reviewed findings and a fix → re-test evidence report before launch.', items: ['Pinned external engines', 'Reviewed remediation', 'Verification report'], buy: 'Buy launch verification', pending: 'Payment activation pending' },
   },
   faq: {
     eyebrow: 'Technical FAQ',
@@ -244,8 +244,9 @@ export const englishDictionary = {
   contact: {
     eyebrow: 'Contact',
     title: 'Use the channel that matches the question.',
-    intro: 'RLSProof currently uses its public GitHub repository as the documented product contact surface. Do not post credentials, private repository contents, or sensitive vulnerability details in a public issue.',
+    intro: 'Contact the individual operating RLSProof at cmetehan161@gmail.com for product, privacy, purchase, or refund questions. GitHub Issues is also available for non-sensitive technical reports. Do not post credentials, private repository contents, or sensitive vulnerability details in a public issue.',
     methods: [
+      { id: 'email', heading: 'Email support and refund requests', body: 'Email the RLSProof operator for private support, privacy questions, and refund requests. For a payment question, include your order reference and a brief description; never send card numbers, passwords, or source credentials.', linkLabel: 'cmetehan161@gmail.com', href: 'mailto:cmetehan161@gmail.com' },
       { id: 'product', heading: 'Product questions and support', body: 'Use GitHub Issues for reproducible product questions, bug reports, and public-repository Quick Scan problems. Include the smallest safe reproduction you can provide.', linkLabel: 'Open GitHub Issues', href: 'https://github.com/psycholog1sts/personal-app/issues/new' },
       { id: 'security', heading: 'Security reports', body: 'Start from the repository Security page and follow the responsible-disclosure policy. Never paste credentials, tokens, private source, or exploit details into a public issue.', linkLabel: 'Open repository Security', href: 'https://github.com/psycholog1sts/personal-app/security' },
       { id: 'service', heading: 'Launch Verification', body: 'Current service scope and payment status are published on the pricing section. Payment activation is pending, so no active checkout is represented until a real provider flow is available.', linkLabel: 'View pricing', href: '/#pricing' },
@@ -254,8 +255,9 @@ export const englishDictionary = {
   },
   legal: {
     privacy: {
-      brand: 'RLSProof', title: 'Privacy', updated: 'Last updated: September 4, 2026.',
+      brand: 'RLSProof', title: 'Privacy', updated: 'Last updated: September 10, 2026.',
       sections: [
+        { id: 'operator', heading: 'Who operates RLSProof', body: 'RLSProof is an independent software product operated by an individual under the RLSProof brand. References to RLSProof, we, or us mean this individual operator.' },
         { id: 'scan', heading: 'What the free scan processes', body: 'RLSProof Quick Scan runs in your browser. Your browser requests a bounded set of eligible public source files directly from the GitHub API, keeps the selected content in browser memory while the scan runs, and produces normalized findings locally.' },
         { id: 'retain', heading: 'What RLSProof does not intentionally receive or retain', body: 'The RLSProof site does not intentionally receive or persist repository source files, GitHub blob contents, or raw secrets for the free Quick Scan. Findings are designed to omit secret values. The static site host and network providers may still retain ordinary request logs according to their own policies.' },
         { id: 'third-party', heading: 'Data sent to third parties', body: 'GitHub receives the API requests needed to retrieve public repository content. If you purchase a paid service, the payment provider receives the information necessary to process that transaction. RLSProof does not use a paid AI model for the free scan.' },
@@ -264,11 +266,12 @@ export const englishDictionary = {
       returnHome: 'Return to RLSProof',
     },
     terms: {
-      brand: 'RLSProof', title: 'Terms', updated: 'Last updated: September 3, 2026.',
+      brand: 'RLSProof', title: 'Terms', updated: 'Last updated: September 10, 2026.',
       sections: [
+        { id: 'operator', heading: 'Who operates RLSProof', body: 'RLSProof is an independent software product operated by an individual under the RLSProof brand. References to RLSProof, we, or us mean this individual operator.' },
         { id: 'authorized', heading: 'Authorized use only', body: 'You may submit only repositories you are authorized to assess. The free service is limited to public GitHub repositories and is intended for defensive software-development use.' },
         { id: 'certification', heading: 'No security certification', body: 'RLSProof is an engineering aid. A clean result does not prove that software is secure, compliant, free of vulnerabilities, or safe to deploy. Quick Scan intentionally performs partial static checks and marks its coverage incomplete.' },
-        { id: 'paid', heading: 'Paid services', body: 'Any paid audit or remediation engagement is limited to the scope stated at purchase or in the accompanying written scope. Findings and recommendations are based on the code and evidence available at the time of review.' },
+        { id: 'paid', heading: 'Paid services', body: 'Launch Verification is offered at $149 USD as a one-time payment. Payment activation is pending; purchases are not currently available. Any paid audit or remediation engagement is limited to the scope stated at purchase or in the accompanying written scope. Findings and recommendations are based on the code and evidence available at the time of review.' },
         { id: 'availability', heading: 'Availability', body: 'The service may reject repositories that exceed resource limits, API quotas, or safety constraints. Features and limits may change as the product is validated and improved.' },
         { id: 'responsible', heading: 'Responsible use', body: 'Do not use RLSProof to access private systems without authorization, expose credentials, evade access controls, or perform harmful activity.' },
       ],
